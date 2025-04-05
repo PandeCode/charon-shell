@@ -1,0 +1,8 @@
+{
+  "workspace.library": [
+    "/home/shawn/dev/lua/charon-shell/",
+    "/home/shawn/dev/lua/charon-shell/lua",
+    "/home/shawn/dev/lua/lib/astal/lang/lua"
+  ],
+  "Lua.runtime.version": "Lua52"
+}

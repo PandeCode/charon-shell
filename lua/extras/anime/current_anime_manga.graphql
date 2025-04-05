@@ -1,0 +1,55 @@
+query {
+  MediaListCollection(userName: "d3bug64", type: ANIME, status: CURRENT) {
+    lists {
+      name
+      entries {
+        id
+        score
+        media {
+          id
+          title {
+            romaji
+            english
+          }
+          episodes
+          coverImage {
+            medium
+          }
+          nextAiringEpisode {
+            airingAt
+            episode
+          }
+          tags {
+            name
+          }
+          episodes
+        }
+        progress
+      }
+    }
+  }
+
+  MangaListCollection: MediaListCollection(userName: "d3bug64", type: MANGA, status: CURRENT) {
+    lists {
+      name
+      entries {
+        id
+        score
+        media {
+          id
+          title {
+            romaji
+            english
+          }
+          chapters
+          volumes
+          coverImage {
+            large
+          }
+        }
+        progress
+        progressVolumes
+      }
+    }
+  }
+}

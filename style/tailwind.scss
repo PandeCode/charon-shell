@@ -1,0 +1,408 @@
+// Theme colors mapping
+$colors: (
+  "primary": $base0D,
+  "secondary": $base03,
+  "success": $base0B,
+  "info": $base0C,
+  "warning": $base0A,
+  "danger": $base0F,
+  "light": $base07,
+  "dark": $base00,
+  "white": #ffffff,
+  "black": #000000,
+  "gray-100": mix(white, $base05, 85%),
+  "gray-200": mix(white, $base05, 70%),
+  "gray-300": mix(white, $base05, 55%),
+  "gray-400": mix(white, $base05, 40%),
+  "gray-500": mix(white, $base05, 25%),
+  "gray-600": mix(black, $base05, 25%),
+  "gray-700": mix(black, $base05, 40%),
+  "gray-800": mix(black, $base05, 55%),
+  "gray-900": mix(black, $base05, 70%)
+);
+
+// Font sizes (in px)
+$font-sizes: (
+  "xs": 12px,
+  "sm": 14px,
+  "base": 16px,
+  "lg": 18px,
+  "xl": 20px,
+  "2xl": 24px,
+  "3xl": 30px,
+  "4xl": 36px,
+  "5xl": 48px
+);
+
+// Spacing scale (in px)
+$spacings: (
+  "0": 0,
+  "1": 4px,
+  "2": 8px,
+  "3": 12px,
+  "4": 16px,
+  "5": 20px,
+  "6": 24px,
+  "8": 32px,
+  "10": 40px,
+  "12": 48px,
+  "16": 64px,
+  "20": 80px,
+  "24": 96px,
+  "32": 128px
+);
+
+// Border radius
+$radii: (
+  "none": 0,
+  "sm": 2px,
+  "default": 4px,
+  "md": 6px,
+  "lg": 8px,
+  "xl": 12px,
+  "full": 9999px
+);
+
+// Border widths
+$border-widths: (
+  "0": 0,
+  "1": 1px,
+  "2": 2px,
+  "4": 4px,
+  "8": 8px
+);
+
+// Font weights
+$font-weights: (
+  "thin": 100,
+  "extralight": 200,
+  "light": 300,
+  "normal": 400,
+  "medium": 500,
+  "semibold": 600,
+  "bold": 700,
+  "extrabold": 800,
+  "black": 900
+);
+
+// Opacity levels
+$opacity-levels: (
+  "0": 0,
+  "25": 0.25,
+  "50": 0.5,
+  "75": 0.75,
+  "100": 1
+);
+
+// Spacing utilities
+@each $key, $value in $spacings {
+
+  // Margin
+  .m-#{$key} {
+    margin: $value;
+  }
+
+  .mx-#{$key} {
+    margin-left: $value;
+    margin-right: $value;
+  }
+
+  .my-#{$key} {
+    margin-top: $value;
+    margin-bottom: $value;
+  }
+
+  .mt-#{$key} {
+    margin-top: $value;
+  }
+
+  .mr-#{$key} {
+    margin-right: $value;
+  }
+
+  .mb-#{$key} {
+    margin-bottom: $value;
+  }
+
+  .ml-#{$key} {
+    margin-left: $value;
+  }
+
+  // Padding
+  .p-#{$key} {
+    padding: $value;
+  }
+
+  .px-#{$key} {
+    padding-left: $value;
+    padding-right: $value;
+  }
+
+  .py-#{$key} {
+    padding-top: $value;
+    padding-bottom: $value;
+  }
+
+  .pt-#{$key} {
+    padding-top: $value;
+  }
+
+  .pr-#{$key} {
+    padding-right: $value;
+  }
+
+  .pb-#{$key} {
+    padding-bottom: $value;
+  }
+
+  .pl-#{$key} {
+    padding-left: $value;
+  }
+}
+
+// Width and Height
+@each $key, $value in $spacings {
+  .w-#{$key} {
+    min-width: $value;
+  }
+
+  .h-#{$key} {
+    min-height: $value;
+  }
+}
+
+// Colors
+@each $name, $color in $colors {
+
+  // Text colors
+  .text-#{$name} {
+    color: $color;
+  }
+
+  // Background colors
+  .bg-#{$name} {
+    background-color: $color;
+  }
+
+  // Border colors
+  .border-#{$name} {
+    border-color: $color;
+  }
+}
+
+// Font sizes
+@each $name, $size in $font-sizes {
+  .text-#{$name} {
+    font-size: $size;
+  }
+}
+
+// Font weights
+@each $name, $weight in $font-weights {
+  .font-#{$name} {
+    font-weight: $weight;
+  }
+}
+
+// Text decoration
+.underline {
+  text-decoration: underline;
+}
+
+.line-through {
+  text-decoration: line-through;
+}
+
+.no-underline {
+  text-decoration: none;
+}
+
+
+// Border radius
+@each $name, $value in $radii {
+  .rounded-#{$name} {
+    border-radius: $value;
+  }
+
+  .rounded-t-#{$name} {
+    border-top-left-radius: $value;
+    border-top-right-radius: $value;
+  }
+
+  .rounded-r-#{$name} {
+    border-top-right-radius: $value;
+    border-bottom-right-radius: $value;
+  }
+
+  .rounded-b-#{$name} {
+    border-bottom-right-radius: $value;
+    border-bottom-left-radius: $value;
+  }
+
+  .rounded-l-#{$name} {
+    border-top-left-radius: $value;
+    border-bottom-left-radius: $value;
+  }
+}
+
+// Border width
+@each $name, $width in $border-widths {
+  .border-#{$name} {
+    border-width: $width;
+  }
+
+  .border-t-#{$name} {
+    border-top-width: $width;
+  }
+
+  .border-r-#{$name} {
+    border-right-width: $width;
+  }
+
+  .border-b-#{$name} {
+    border-bottom-width: $width;
+  }
+
+  .border-l-#{$name} {
+    border-left-width: $width;
+  }
+}
+
+// Border style
+.border-solid {
+  border-style: solid;
+}
+
+.border-dashed {
+  border-style: dashed;
+}
+
+.border-dotted {
+  border-style: dotted;
+}
+
+.border-double {
+  border-style: double;
+}
+
+.border-none {
+  border-style: none;
+}
+
+// Opacity
+@each $name, $value in $opacity-levels {
+  .opacity-#{$name} {
+    opacity: $value;
+  }
+}
+
+// Box shadows
+.shadow-none {
+  box-shadow: none;
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-inner {
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+// GTK-specific classes for transitions and animations
+.transition {
+  transition-property: all;
+  transition-duration: 200ms;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-duration: 200ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-duration: 200ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-duration: 200ms;
+}
+
+.duration-100 {
+  transition-duration: 100ms;
+}
+
+.duration-200 {
+  transition-duration: 200ms;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+.duration-500 {
+  transition-duration: 500ms;
+}
+
+.duration-700 {
+  transition-duration: 700ms;
+}
+
+.duration-1000 {
+  transition-duration: 1000ms;
+}
+
+.ease-linear {
+  transition-timing-function: linear;
+}
+
+.ease-in {
+  transition-timing-function: ease-in;
+}
+
+.ease-out {
+  transition-timing-function: ease-out;
+}
+
+.ease-in-out {
+  transition-timing-function: ease-in-out;
+}
+
+// Hover utilities (pseudo-classes work in GTK)
+// [class*="hover:"] {
+//   transition-property: all;
+//   transition-duration: 200ms;
+// }
+
+// GTK-specific animation classes
+.animate-none {
+  animation: none;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    -gtk-icon-transform: rotate(1turn);
+  }
+}
