@@ -1,117 +1,61 @@
 @use "sass:color";
+@use "sass:map";
 
-// @use './lua/windows/player/player.scss';
-// @use './lua/windows/center/center.scss';
+// Base16 theme variables
+// $base00: #1a1b26; // Dark background
+// $base01: #16161e; // Darker background
+// $base02: #2f3549; // Selection background
+// $base03: #444b6a; // Comments, invisibles
+// $base04: #787c99; // Dark foreground
+// $base05: #a9b1d6; // Default foreground
+// $base06: #cbccd1; // Light foreground
+// $base07: #d5d6db; // Light background
+// $base08: #c0caf5; // Variables
+// $base09: #a9b1d6; // Integers, booleans
+// $base0A: #0db9d7; // Classes, HTML tags
+// $base0B: #9ece6a; // Strings
+// $base0C: #b4f9f8; // Support, regex
+// $base0D: #2ac3de; // Functions, methods
+// $base0E: #bb9af7; // Keywords
+// $base0F: #f7768e; // Deprecated
 
 @import '../../../../.config/charon-shell/style.scss';
-@import './bootstrap.scss';
 @import './tailwind.scss';
 
-$bg: #21222355;
-$fg: #f1f1f1;
-$accent: #378DF7;
-$radius: 7px;
-
-
-window.Bar {
-  border: none;
+* {
   box-shadow: none;
-  background-color: $base00;
-  color: $fg;
-  font-size: 1.1em;
-  font-weight: bold;
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+  animation-iteration-count: 1;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
 
-  padding: 10px;
-  border-radius: 50px;
+slider {
+  all: unset;
+}
 
-  label {
-    margin: 0 8px;
+scale {
+  padding: 0;
+  margin: .4rem 0;
+
+  trough {
+    min-height: 8px;
   }
 
-  .Workspaces {
-    button {
-      all: unset;
-      background-color: transparent;
-
-      &:hover label {
-        background-color: color.adjust($fg, $alpha: -0.84);
-        border-color: color.adjust($accent, $alpha: -0.8);
-      }
-
-      &:active label {
-        background-color: color.adjust($fg, $alpha: -0.8)
-      }
-    }
-
-    label {
-      transition: 200ms;
-      padding: 0 8px;
-      margin: 2px;
-      border-radius: $radius;
-      border: 1pt solid transparent;
-    }
-
-    .focused label {
-      color: $accent;
-      border-color: $accent;
-    }
+  highlight {
+    background-color: $base0A;
   }
+}
 
-  .SysTray {
-    margin-right: 8px;
+.transparent {
+  background-color: transparent;
+}
 
-    button {
-      padding: 0 4px;
-    }
-  }
+.hover-transparent:hover {
+  background-color: transparent;
+}
 
-  .FocusedClient {
-    color: $accent;
-  }
-
-  .Media .Cover {
-    min-height: 1.2em;
-    min-width: 1.2em;
-    border-radius: $radius;
-    background-position: center;
-    background-size: contain;
-  }
-
-  .Battery label {
-    padding-left: 0;
-    margin-left: 0;
-  }
-
-  .AudioSlider {
-    * {
-      all: unset;
-    }
-
-    icon {
-      margin-right: .6em;
-    }
-
-    & {
-      margin: 0 1em;
-    }
-
-    trough {
-      background-color: color.adjust($fg, $alpha: -0.8);
-      border-radius: $radius;
-    }
-
-    highlight {
-      background-color: $accent;
-      min-height: .8em;
-      border-radius: $radius;
-    }
-
-    slider {
-      background-color: $fg;
-      border-radius: $radius;
-      min-height: 1em;
-      min-width: 1em;
-      margin: -.2em;
-    }
-  }
+.unset {
+  all: unset;
 }

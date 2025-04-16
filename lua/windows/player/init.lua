@@ -1,15 +1,26 @@
-local astal = require("astal")
+local astal = require "astal"
 local Anchor = astal.require("Astal").WindowAnchor
-local Astal = astal.require("Astal")
+local Astal = astal.require "Astal"
 
 local bind = astal.bind
-local Widget = require("astal.gtk3.widget")
+local Widget = require "astal.gtk3.widget"
 local lookup_icon = Astal.Icon.lookup_icon
 
-local utils = require("lua.utils")
-local map = utils.map
+local el = require "lua.extras.elements"
+local p = el.p
+local img = el.img
+local btni = el.btni
+local div = el.div
+local divv = el.divv
 
-local Mpris = astal.require("AstalMpris")
+local utils = require "lua.utils"
+local utils_a = require "lua.utils.astal"
+local map = utils.map
+local css = require("lua.extras.tailwind").toCSS
+
+local Mpris = astal.require "AstalMpris"
+
+local ensure_icon = utils_a.ensure_icon
 
 local function MediaPlayer(player)
 	local title = bind(player, "title"):as(function(t)
@@ -20,57 +31,52 @@ local function MediaPlayer(player)
 		return a or "Unknown Artist"
 	end)
 
-	local art = astal.Variable(""):poll(5000, "album_art.sh", function(out)
-		return out
-	end)
-	local cover_art = art(function(c)
-		return string.format("background-image: url('%s');", c)
+	local cover_art = bind(player, "cover-art"):as(function(c)
+		return img(c, 6, 6, "rounded-lg", {})
 	end)
 
+	-- Ensure player icon exists
 	local player_icon = bind(player, "entry"):as(function(e)
-		return lookup_icon(e) and e or "audio-x-generic-symbolic"
+		return ensure_icon(e, "audio-x-generic-symbolic")
 	end)
 
 	local position = bind(player, "position"):as(function(p)
 		return player.length > 0 and p / player.length or 0
 	end)
 
+	-- Fixed playback status icon handling
 	local play_icon = bind(player, "playback-status"):as(function(s)
-		return s == "PLAYING" and "media-playback-pause-symbolic" or "media-playback-start-symbolic"
+		if s == "PLAYING" then
+			return ensure_icon("media-playback-pause-symbolic", "gtk-media-pause")
+		else
+			return ensure_icon("media-playback-start-symbolic", "gtk-media-play")
+		end
 	end)
 
-	return Widget.Box({
+	return Widget.Box {
 		class_name = "MediaPlayer",
-		Widget.Box({
-			class_name = "cover-art",
-			css = cover_art,
-
-			on_destroy = function()
-				art:drop()
-			end,
-		}),
-		Widget.Box({
+		cover_art,
+		Widget.Box {
 			vertical = true,
-			Widget.Box({
-				class_name = "title",
-				Widget.Label({
-					ellipsize = "END",
+			class_name = "p-2",
+			div({
+				p(title, nil, {
 					hexpand = true,
+					ellipsize = "END",
 					halign = "START",
-					label = title,
 				}),
-				Widget.Icon({
-					icon = player_icon,
-				}),
-			}),
-			Widget.Label({
+				btni(player_icon, nil, function()
+					player:raise()
+				end, { sensitive = bind(player, "can-raise") }),
+			}, "font-bold text-xl"),
+			Widget.Label {
 				halign = "START",
 				valign = "START",
 				vexpand = true,
 				wrap = true,
 				label = artist,
-			}),
-			Widget.Slider({
+			},
+			Widget.Slider {
 				visible = bind(player, "length"):as(function(l)
 					return l > 0
 				end),
@@ -78,73 +84,110 @@ local function MediaPlayer(player)
 					player.position = event.value * player.length
 				end,
 				value = position,
-			}),
-			Widget.CenterBox({
-				class_name = "actions",
-				Widget.Label({
+			},
+			Widget.CenterBox {
+				p(bind(player, "position"):as(utils.strlen), nil, {
 					hexpand = true,
-					class_name = "position",
 					halign = "START",
 					visible = bind(player, "length"):as(function(l)
 						return l > 0
 					end),
-					label = bind(player, "position"):as(utils.strlen),
 				}),
-				Widget.Box({
-					Widget.Button({
-						on_clicked = function()
-							player:previous()
-						end,
-						visible = bind(player, "can-go-previous"),
-						Widget.Icon({
-							icon = "media-skip-backward-symbolic",
-						}),
-					}),
-					Widget.Button({
-						on_clicked = function()
-							player:play_pause()
-						end,
-						visible = bind(player, "can-control"),
-						Widget.Icon({
-							icon = play_icon,
-						}),
-					}),
-					Widget.Button({
-						on_clicked = function()
-							player:next()
-						end,
-						visible = bind(player, "can-go-next"),
-						Widget.Icon({
-							icon = "media-skip-forward-symbolic",
-						}),
-					}),
-				}),
-				Widget.Label({
-					class_name = "length",
-					hexpand = true,
-					halign = "END",
-					visible = bind(player, "length"):as(function(l)
-						return l > 0
+				div {
+					-- Improved loop status icon handling
+					bind(player, "loop-status"):as(function(v)
+						if v == nil or v == "UNSUPPORTED" then
+							return nil
+						end
+
+						local icon_name
+						local c = ""
+						if v == "NONE" or v == "OFF" then
+							icon_name = ensure_icon("media-playlist-repeat-symbolic", "gtk-media-repeat")
+						elseif v == "TRACK" then
+							icon_name = ensure_icon("media-playlist-repeat-song-symbolic", "gtk-media-repeat")
+							c = "bg-base01"
+						elseif v == "PLAYLIST" then
+							icon_name = ensure_icon("media-playlist-repeat-symbolic", "gtk-media-repeat")
+							c = "bg-base01"
+						else
+							utils.notify("Unknown loop status: " .. tostring(v))
+							icon_name = "dialog-error-symbolic"
+						end
+
+						return btni(icon_name, "m-1 h-0 w-0 " .. c, function()
+							player:loop()
+						end, { visible = true })
 					end),
-					label = bind(player, "length"):as(function(l)
+
+					-- Previous button with fallback icon
+					btni(ensure_icon("media-skip-backward-symbolic", "gtk-media-previous"), "m-1 h-0 w-0", function()
+						player:previous()
+					end, { visible = bind(player, "can-go-previous") }),
+
+					-- Play/pause button with fallback icon
+					btni(play_icon, "m-1 h-0 w-0", function()
+						player:play_pause()
+					end, { visible = bind(player, "can-control") }),
+
+					-- Next button with fallback icon
+					btni(ensure_icon("media-skip-forward-symbolic", "gtk-media-next"), "m-1 h-0 w-0", function()
+						player:next()
+					end, { visible = bind(player, "can-go-next") }),
+
+					-- Improved shuffle status icon handling
+					bind(player, "shuffle-status"):as(function(s)
+						if s == nil or s == "UNSUPPORTED" then
+							return nil
+						end
+
+						return btni(
+							ensure_icon("media-playlist-shuffle-symbolic", "gtk-media-shuffle"),
+							"m-1 h-0 w-0",
+							function()
+								player:shuffle()
+							end,
+							{
+								visible = true,
+								-- Apply visual indication of shuffle state
+								class_name = (s == "ON") and "bg-base01" or "",
+							}
+						)
+					end),
+				},
+				p(
+					bind(player, "length"):as(function(l)
 						return l > 0 and utils.strlen(l) or "0:00"
 					end),
-				}),
-			}),
-		}),
-	})
+					nil,
+					{
+						hexpand = true,
+						halign = "END",
+						visible = bind(player, "length"):as(function(l)
+							return l > 0
+						end),
+					}
+				),
+			},
+		},
+	}
 end
 
 local function Players()
 	local mpris = Mpris.get_default()
 
-	return Widget.Box({
+	return Widget.Box {
 		vertical = true,
+		css = css { minWidth = "500px" },
+		class_name = "rounded-lg bg-base00-90 m-2 p-2 border-solid border-base02 border-2 shadow",
 		bind(mpris, "players"):as(function(players)
-			utils.pinspect(players)
 			return map(players, MediaPlayer)
 		end),
-	})
+	}
 end
 
-return utils.mkPopupToggle(Players)
+local utils_a = require "lua.utils.astal"
+return utils_a.mkPopupToggleAnim(Players, {
+	anchor = Anchor.TOP,
+	class_name = "transparent",
+})

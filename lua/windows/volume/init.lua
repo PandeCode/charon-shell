@@ -1,102 +1,136 @@
-local astal = require("astal")
-local Widget = require("astal.gtk3.widget")
+local astal = require "astal"
+local Gtk = require("astal.gtk3").Gtk
+local Widget = require "astal.gtk3.widget"
+local GLib = astal.require "GLib"
 local Anchor = astal.require("Astal").WindowAnchor
 local bind = astal.bind
-local Wp = astal.require("AstalWp")
-local utils = require("lua.utils")
+local Wp = astal.require "AstalWp"
+local utils = require "lua.utils"
+local utils_a = require "lua.utils.astal"
 
-local function VolWidget()
+local elements = require "lua.extras.elements"
+local div = elements.div
+local divv = elements.divv
+local p = elements.p
+local btni = elements.btni
+local i = elements.i
+
+local mute_btn = function(endpoint)
+	return btni(
+		bind(endpoint, "volume-icon"),
+		bind(endpoint, "mute"):as(function(m)
+			return "mute-button" .. (m and " muted" or "") .. " rounded-lg"
+		end),
+		function()
+			endpoint:set_mute(not endpoint:get_mute())
+		end
+	)
+end
+
+local audio_percent = function(endpoint)
+	return p(bind(endpoint, "volume"):as(function(v)
+		return string.format("%.0f%%", tostring(v * 100))
+	end))
+end
+
+local audio_slider = function(endpoint)
+	return Widget.Slider {
+		class_name = bind(endpoint, "mute"):as(function(m)
+			return "volume-slider" .. (m and " muted" or "")
+		end),
+		hexpand = true,
+		value = bind(endpoint, "volume"),
+		on_dragged = function(self)
+			endpoint:set_volume(self.value)
+		end,
+	}
+end
+
+local mk_line = function(source)
+	return divv(
+		{
+			div {
+				Widget.CenterBox {
+					hexpand = true,
+					bind(source, "icon"):as(function(v)
+						if v == nil then
+							return v
+						end
+						local _ = "-symbolic"
+						if v:sub(-#_) == _ then
+							return i(v)
+						end
+						return i(v .. _)
+					end),
+					p(bind(source, "name")),
+					audio_percent(source),
+				},
+			},
+			div {
+				div({ mute_btn(source) }, "pr-2"),
+				audio_slider(source),
+			},
+		},
+		"border-solid border-base04-90 border-2 shadow-lg m-2 p-2 rounded-lg bg-base00-90",
+		{
+			hexpand = true,
+		}
+	)
+end
+
+local function VolWindow()
 	local WpAudio = Wp.get_default()
 	local speaker = WpAudio:get_default_speaker()
 	local microphone = WpAudio:get_default_microphone()
 
-	return Widget.Box({
-		class_name = "audio-sliders",
-		css = "min-width: 400px",
-		vertical = true,
-		spacing = 8,
-		Widget.Box({
-			class_name = "speaker",
-			spacing = 10,
-			hexpand = true,
-			Widget.Button({
-				class_name = bind(speaker, "mute"):as(function(m)
-					return "mute-button" .. (m and " muted" or "")
-				end),
-				on_clicked = function()
-					speaker:set_mute(not speaker:get_mute())
-				end,
-				Widget.Icon({
-					icon = bind(speaker, "mute"):as(function(m)
-						return m and "audio-volume-muted-symbolic" or "audio-volume-high-symbolic"
+	local r1 = Widget.Revealer {
+		child = divv(utils.map(WpAudio:get_audio():get_speakers(), function(e)
+			return mk_line(e)
+		end)),
+		reveal_child = false,
+		transition_type = Gtk.RevealerTransitionType.SLIDE_DOWN,
+		transition_duration = 500,
+	}
+	local r2 = Widget.Revealer {
+		child = divv(utils.map(WpAudio:get_audio():get_streams(), function(e)
+			return mk_line(e)
+		end)),
+		reveal_child = false,
+		transition_type = Gtk.RevealerTransitionType.SLIDE_DOWN,
+		transition_duration = 500,
+	}
+
+	return divv(
+			{
+				mk_line(speaker),
+				div {
+					p "Speakers",
+					btni("go-down-symbolic", nil, function()
+						r1.reveal_child = not r1.reveal_child
 					end),
-				}),
-			}),
-			Widget.Slider({
-				class_name = bind(speaker, "mute"):as(function(m)
-					return "volume-slider" .. (m and " muted" or "")
-				end),
-				hexpand = true,
-				value = bind(speaker, "volume"),
-				on_dragged = function(self)
-					speaker:set_volume(self.value)
-				end,
-			}),
-			Widget.Label({
-				class_name = "volume-value",
-				width_chars = 4,
-				label = bind(speaker, "volume"):as(function(v)
-					return string.format("%.0f%%", tostring(v * 100))
-				end),
-			}),
-		}),
-		Widget.Box({
-			class_name = "microphone",
-			spacing = 10,
-			hexpand = true,
-			Widget.Button({
-				class_name = bind(microphone, "mute"):as(function(m)
-					return "mute-button" .. (m and " muted" or "")
-				end),
-				on_clicked = function()
-					microphone:set_mute(not microphone:get_mute())
-				end,
-				Widget.Icon({
-					icon = bind(microphone, "mute"):as(function(m)
-						return m and "audio-input-microphone-muted-symbolic" or "audio-input-microphone-high-symbolic"
+				},
+				r1,
+				div {
+					p "Audio Streams",
+					btni("go-down-symbolic", nil, function()
+						r2.reveal_child = not r2.reveal_child
 					end),
-				}),
-			}),
-			Widget.Slider({
-				class_name = bind(microphone, "mute"):as(function(m)
-					return "volume-slider" .. (m and " muted" or "")
-				end),
-				hexpand = true,
-				value = bind(microphone, "volume"),
-				on_dragged = function(self)
-					microphone:set_volume(self.value)
-				end,
-			}),
-			Widget.Label({
-				class_name = "volume-value",
-				width_chars = 4,
-				label = bind(microphone, "volume"):as(function(v)
-					return string.format("%.0f%%", tostring(v * 100))
-				end),
-			}),
-		}),
-	})
+				},
+				r2,
+				p "Microphones",
+				mk_line(microphone),
+			},
+			"audio-sliders bg-base00-75 m-2 p-2 rounded-lg border-solid border-2 border-base04-90",
+			{
+
+				css = "min-width: 500px;",
+				spacing = 8,
+			}
+		)
+
 end
 
-local function VolWindow()
-	return Widget.Window({
-		anchor = Anchor.TOP + Anchor.RIGHT,
-		Widget.Box({
-			css = "background: grey; padding: 1px; margin: 20px; border-radius: 20px;",
-			vertical = true,
-			VolWidget(),
-		}),
-	})
-end
-
-return utils.mkPopupToggle(VolWindow)
+return utils_a.mkPopupToggleAnim(VolWindow, {
+	anchor = Anchor.TOP + Anchor.RIGHT,
+	class_name = "tranparent",
+})

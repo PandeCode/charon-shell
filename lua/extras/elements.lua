@@ -1,8 +1,9 @@
-local Widget = require("astal.gtk3.widget")
-local logger = require("lua.logger")
+local Widget = require "astal.gtk3.widget"
+local logger = require "lua.logger"
 local Gtk = require("astal.gtk3").Gtk
 
-local utils = require("lua.utils")
+local utils = require "lua.utils"
+local assets = require "lua.assets"
 
 --- @module Helper functions for creating GTK3 UI elements
 -- @author Updated version with improved consistency and documentation
@@ -13,8 +14,10 @@ local M = {}
 -- @param class_name CSS class name for styling (defaults to "div")
 -- @param extra Table of additional properties to apply to the widget
 -- @return Widget.Box instance
-function M.div(children, class_name, extra)
-	if type(children) ~= "table" then
+function M.mk_div(children, class_name, extra)
+	if type(children) == "string" then
+		children = { M.p(children) }
+	elseif type(children) ~= "table" then
 		children = { children }
 	end
 
@@ -27,7 +30,15 @@ function M.div(children, class_name, extra)
 		base[i] = child
 	end
 
-	return Widget.Box(utils.merge(base, extra or {}))
+	return utils.merge(base, extra or {})
+end
+
+function M.div(...)
+	return Widget.Box(M.mk_div(...))
+end
+
+function M.grid(...)
+	return Gtk.Grid(M.mk_div(...))
 end
 
 --- Creates a vertical box container with provided elements
@@ -47,8 +58,14 @@ end
 -- @param extra Table of additional properties to apply to the widget
 -- @return Widget.Label instance
 function M.p(text, class_name, extra)
+	if text == nil then
+		text = "nil"
+	end
+	if type(text) ~= "string" and text.emitter == nil then
+		text = utils.inspect(text)
+	end
 	local base = {
-		label = text or "p",
+		label = text or "{p}",
 		class_name = class_name or "",
 	}
 
@@ -66,7 +83,7 @@ function M.btn(label, class_name, callback, extra)
 		label = label,
 		class_name = class_name or "",
 		on_clicked = callback or function()
-			logger.debug("Unused Button Callback")
+			logger.debug "Unused Button Callback"
 		end,
 	}
 
@@ -77,12 +94,16 @@ function M.btni(icon_name, class_name, callback, extra)
 	local base = {
 		class_name = class_name or "",
 		on_clicked = callback or function()
-			logger.debug("Unused Button Callback")
+			logger.debug "Unused Button Callback"
 		end,
-		Widget.Icon({ icon = icon_name }),
+		Widget.Icon { icon = icon_name },
 	}
 
 	return Widget.Button(utils.merge(base, extra or {}))
+end
+
+function M.i(icon_name, class_name, extra)
+	return Widget.Icon(utils.merge({ icon = icon_name, class_name = class_name }, extra))
 end
 
 --- Creates an image widget from an image URL/path
@@ -93,16 +114,29 @@ end
 -- @param extra Table of additional properties to apply to the widget
 -- @return Widget.Box instance configured as an image
 function M.img(image_path, width, height, class_name, extra)
+	image_path = image_path or assets.default_image_path
+	if type(width) == "number" then
+		width = width .. "em"
+	elseif type(width) ~= "string" then
+		width = "1em"
+	end
+
+	if type(height) == "number" then
+		height = height .. "em"
+	elseif type(height) ~= "string" then
+		height = "1em"
+	end
+
 	local css = "background-image: url('"
 		.. image_path
 		.. "');"
 		.. [[
         min-width: ]]
-		.. (width or 1)
-		.. [[em;
+		.. width
+		.. [[;
         min-height: ]]
-		.. (height or 1)
-		.. [[em;
+		.. height
+		.. [[;
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;
@@ -113,6 +147,32 @@ function M.img(image_path, width, height, class_name, extra)
 		valign = "CENTER",
 		class_name = class_name or "",
 		css = css,
+	}
+
+	return Widget.Box(utils.merge(base, extra or {}))
+end
+
+function M.imgv(image_path, width, height, class_name, extra)
+	local base = {
+		halign = "CENTER",
+		valign = "CENTER",
+		class_name = class_name or "",
+		css = image_path(function(v)
+			return "background-image: url('"
+				.. v
+				.. "');"
+				.. [[
+        min-width: ]]
+				.. (width or 1)
+				.. [[em;
+        min-height: ]]
+				.. (height or 1)
+				.. [[em;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+    ]]
+		end),
 	}
 
 	return Widget.Box(utils.merge(base, extra or {}))
@@ -155,7 +215,7 @@ function M.imgbtn(image_path, width, height, callback, class_name, button_extra,
 	local button_base = {
 		class_name = class_name or "",
 		on_clicked = callback or function()
-			logger.debug("Unused Button Callback")
+			logger.debug "Unused Button Callback"
 		end,
 		image, -- Add the image as the first child element
 	}

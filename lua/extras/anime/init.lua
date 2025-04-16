@@ -1,37 +1,14 @@
-local socket = require("socket")
-local url = require("socket.url")
-local utils = require("lua.utils")
-local AniListAuth = require("lua.extras.anime.anilist_auth")
-local AniListQueries = require("lua.extras.anime.anilist_graphql")
-local AniListMediaCollection = require("lua.extras.anime.current_anime_manga")
-local lfs = require("lfs") -- LuaFileSystem for file operations
-local json = require("dkjson") -- dkjson for JSON parsing
+local socket = require "socket"
+local url = require "socket.url"
+local utils = require "lua.utils"
+local AniListAuth = require "lua.extras.anime.anilist_auth"
+local AniListQueries = require "lua.extras.anime.anilist_graphql"
+local AniListMediaCollection = require "lua.extras.anime.current_anime_manga"
+local lfs = require "lfs" -- LuaFileSystem for file operations
 
--- Configuration file path
-local config_path = os.getenv("HOME") .. "/.config/charon-shell/config.json"
+local assets = require "lua.assets"
 
--- Function to load and decode the config file
-local function load_config()
-	local file = io.open(config_path, "r")
-	if not file then
-		print("Error: Configuration file missing: " .. config_path)
-		return nil
-	end
-
-	local content = file:read("*a")
-	file:close()
-
-	local config, pos, err = json.decode(content, 1, nil)
-	if err then
-		print("Error parsing config file: " .. err)
-		return nil
-	end
-
-	return config
-end
-
--- Load configuration parameters
-local config = load_config()
+local config = assets.config
 if not config then
 	return nil
 end
@@ -39,7 +16,7 @@ end
 -- Now initialize authentication using parameters from the config file
 local auth = AniListAuth:init(config.client_id, config.client_secret, config.redirect_url)
 
-local cache_dir = os.getenv("HOME") .. "/.cache/charon-shell/"
+local cache_dir = os.getenv "HOME" .. "/.cache/charon-shell/"
 local cache_file = cache_dir .. "current_consuming_cache.lua"
 local cache_duration = 24 * 60 * 60 -- 1 day in seconds
 
@@ -71,12 +48,12 @@ local function start_auth_server()
 		local request = client:receive()
 
 		if request then
-			local _, _, path = request:find("GET (.*) HTTP/")
+			local _, _, path = request:find "GET (.*) HTTP/"
 			if path then
 				local parsed = url.parse(path)
 				if parsed.query then
 					local params = {}
-					for k, v in parsed.query:gmatch("([^&=]+)=([^&=]+)") do
+					for k, v in parsed.query:gmatch "([^&=]+)=([^&=]+)" do
 						params[k] = url.unescape(v)
 					end
 					auth_code = params.code
@@ -109,7 +86,7 @@ end
 local function load_cache()
 	local file = io.open(cache_file, "r")
 	if file then
-		local content = file:read("*a")
+		local content = file:read "*a"
 		file:close()
 		return load(content)()
 	end
@@ -142,7 +119,7 @@ local function get_current_consuming(force_auth)
 	-- Check if we need to authenticate
 	if not auth.access_token then
 		local auth_url = auth:get_auth_url()
-		print("Please visit this URL to authorize the application:")
+		print "Please visit this URL to authorize the application:"
 		print(auth_url)
 
 		os.execute("xdg-open '" .. auth_url .. "'")
@@ -150,7 +127,7 @@ local function get_current_consuming(force_auth)
 		local auth_code = start_auth_server()
 
 		if not auth_code then
-			print("Failed to get authorization code")
+			print "Failed to get authorization code"
 			return nil
 		end
 

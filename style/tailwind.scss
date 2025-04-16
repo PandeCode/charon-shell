@@ -1,25 +1,52 @@
 // Theme colors mapping
 $colors: (
-  "primary": $base0D,
-  "secondary": $base03,
-  "success": $base0B,
-  "info": $base0C,
-  "warning": $base0A,
-  "danger": $base0F,
-  "light": $base07,
-  "dark": $base00,
+  "base00": $base00,
+  "base01": $base01,
+  "base02": $base02,
+  "base03": $base03,
+  "base04": $base04,
+  "base05": $base05,
+  "base06": $base06,
+  "base07": $base07,
+  "base08": $base08,
+  "base09": $base09,
+  "base0A": $base0A,
+  "base0B": $base0B,
+  "base0C": $base0C,
+  "base0D": $base0D,
+  "base0E": $base0E,
+  "base0F": $base0F,
+
+  // "primary": $base0D,
+  // "secondary": $base03,
+  // "success": $base0B,
+  // "info": $base0C,
+  // "warning": $base0A,
+  // "danger": $base0F,
+  // "light": $base07,
+  // "dark": $base00,
   "white": #ffffff,
   "black": #000000,
-  "gray-100": mix(white, $base05, 85%),
-  "gray-200": mix(white, $base05, 70%),
-  "gray-300": mix(white, $base05, 55%),
-  "gray-400": mix(white, $base05, 40%),
-  "gray-500": mix(white, $base05, 25%),
-  "gray-600": mix(black, $base05, 25%),
-  "gray-700": mix(black, $base05, 40%),
-  "gray-800": mix(black, $base05, 55%),
-  "gray-900": mix(black, $base05, 70%)
 );
+
+$opacities: (
+  90,
+  75,
+  50,
+  25,
+  10
+);
+
+$all-colors: $colors;
+
+@each $name, $color in $colors {
+  @each $opacity in $opacities {
+    $decimal-opacity: calc($opacity / 100);
+    $all-colors: map.merge($all-colors, ("#{$name}-#{$opacity}": rgba($color, $decimal-opacity)));
+  }
+}
+
+$colors: $all-colors;
 
 // Font sizes (in px)
 $font-sizes: (
@@ -94,315 +121,298 @@ $opacity-levels: (
   "100": 1
 );
 
-// Spacing utilities
-@each $key, $value in $spacings {
 
-  // Margin
-  .m-#{$key} {
-    margin: $value;
+$mods: (
+  "":"",
+  "hover-": ":hover",
+  // "active-": ":active",
+  // "disabled-": ":disabled",
+  // "selected-": ":selected",
+  // "focus-": ":focus",
+  // "indeterminate-": ":indeterminate",
+  // "checked-": ":checked",
+  // "backdrop-": ":backdrop",
+);
+
+@each $mod, $col in $mods {
+  @each $key, $value in $spacings {
+
+    .#{$mod}m-#{$key}#{$col} {
+      margin: $value;
+    }
+
+    .#{$mod}mx-#{$key}#{$col} {
+      margin-left: $value;
+      margin-right: $value;
+    }
+
+    .#{$mod}my-#{$key}#{$col} {
+      margin-top: $value;
+      margin-bottom: $value;
+    }
+
+    .#{$mod}mt-#{$key}#{$col} {
+      margin-top: $value;
+    }
+
+    .#{$mod}mr-#{$key}#{$col} {
+      margin-right: $value;
+    }
+
+    .#{$mod}mb-#{$key}#{$col} {
+      margin-bottom: $value;
+    }
+
+    .#{$mod}ml-#{$key}#{$col} {
+      margin-left: $value;
+    }
+
+
+    .#{$mod}p-#{$key}#{$col} {
+      padding: $value;
+    }
+
+    .#{$mod}px-#{$key}#{$col} {
+      padding-left: $value;
+      padding-right: $value;
+    }
+
+    .#{$mod}py-#{$key}#{$col} {
+      padding-top: $value;
+      padding-bottom: $value;
+    }
+
+    .#{$mod}pt-#{$key}#{$col} {
+      padding-top: $value;
+    }
+
+    .#{$mod}pr-#{$key}#{$col} {
+      padding-right: $value;
+    }
+
+    .#{$mod}pb-#{$key}#{$col} {
+      padding-bottom: $value;
+    }
+
+    .#{$mod}pl-#{$key}#{$col} {
+      padding-left: $value;
+    }
   }
 
-  .mx-#{$key} {
-    margin-left: $value;
-    margin-right: $value;
+
+  @each $key, $value in $spacings {
+    .#{$mod}w-#{$key}#{$col} {
+      min-width: $value;
+    }
+
+    .#{$mod}h-#{$key}#{$col} {
+      min-height: $value;
+    }
   }
 
-  .my-#{$key} {
-    margin-top: $value;
-    margin-bottom: $value;
+
+  @each $name, $color in $colors {
+    .#{$mod}text-#{$name}#{$col} {
+      color: $color;
+    }
+
+    .#{$mod}bg-#{$name}#{$col} {
+      background-color: $color;
+    }
+
+    .#{$mod}border-#{$name}#{$col} {
+      border-color: $color;
+    }
   }
 
-  .mt-#{$key} {
-    margin-top: $value;
+
+  @each $name, $size in $font-sizes {
+    .#{$mod}text-#{$name}#{$col} {
+      font-size: $size;
+    }
   }
 
-  .mr-#{$key} {
-    margin-right: $value;
+
+  @each $name, $weight in $font-weights {
+    .#{$mod}font-#{$name}#{$col} {
+      font-weight: $weight;
+    }
   }
 
-  .mb-#{$key} {
-    margin-bottom: $value;
+
+  .#{$mod}underline#{$col} {
+    text-decoration: underline;
   }
 
-  .ml-#{$key} {
-    margin-left: $value;
+  .#{$mod}line-through#{$col} {
+    text-decoration: line-through;
   }
 
-  // Padding
-  .p-#{$key} {
-    padding: $value;
+  .#{$mod}no-underline#{$col} {
+    text-decoration: none;
   }
 
-  .px-#{$key} {
-    padding-left: $value;
-    padding-right: $value;
+
+
+  @each $name, $value in $radii {
+    .#{$mod}rounded-#{$name}#{$col} {
+      border-radius: $value;
+    }
+
+    .#{$mod}rounded-t-#{$name}#{$col} {
+      border-top-left-radius: $value;
+      border-top-right-radius: $value;
+    }
+
+    .#{$mod}rounded-r-#{$name}#{$col} {
+      border-top-right-radius: $value;
+      border-bottom-right-radius: $value;
+    }
+
+    .#{$mod}rounded-b-#{$name}#{$col} {
+      border-bottom-right-radius: $value;
+      border-bottom-left-radius: $value;
+    }
+
+    .#{$mod}rounded-l-#{$name}#{$col} {
+      border-top-left-radius: $value;
+      border-bottom-left-radius: $value;
+    }
   }
 
-  .py-#{$key} {
-    padding-top: $value;
-    padding-bottom: $value;
+  @each $name, $width in $border-widths {
+    .#{$mod}border-#{$name}#{$col} {
+      border-width: $width;
+    }
+
+    .#{$mod}border-t-#{$name}#{$col} {
+      border-top-width: $width;
+    }
+
+    .#{$mod}border-r-#{$name}#{$col} {
+      border-right-width: $width;
+    }
+
+    .#{$mod}border-b-#{$name}#{$col} {
+      border-bottom-width: $width;
+    }
+
+    .#{$mod}border-l-#{$name}#{$col} {
+      border-left-width: $width;
+    }
   }
 
-  .pt-#{$key} {
-    padding-top: $value;
+  .#{$mod}border-solid#{$col} {
+    border-style: solid;
   }
 
-  .pr-#{$key} {
-    padding-right: $value;
+  .#{$mod}border-dashed#{$col} {
+    border-style: dashed;
   }
 
-  .pb-#{$key} {
-    padding-bottom: $value;
+  .#{$mod}border-dotted#{$col} {
+    border-style: dotted;
   }
 
-  .pl-#{$key} {
-    padding-left: $value;
-  }
-}
-
-// Width and Height
-@each $key, $value in $spacings {
-  .w-#{$key} {
-    min-width: $value;
+  .#{$mod}border-double#{$col} {
+    border-style: double;
   }
 
-  .h-#{$key} {
-    min-height: $value;
-  }
-}
-
-// Colors
-@each $name, $color in $colors {
-
-  // Text colors
-  .text-#{$name} {
-    color: $color;
+  .#{$mod}border-none#{$col} {
+    border-style: none;
   }
 
-  // Background colors
-  .bg-#{$name} {
-    background-color: $color;
+  @each $name, $value in $opacity-levels {
+    .#{$mod}opacity-#{$name}#{$col} {
+      opacity: $value;
+    }
   }
 
-  // Border colors
-  .border-#{$name} {
-    border-color: $color;
-  }
-}
-
-// Font sizes
-@each $name, $size in $font-sizes {
-  .text-#{$name} {
-    font-size: $size;
-  }
-}
-
-// Font weights
-@each $name, $weight in $font-weights {
-  .font-#{$name} {
-    font-weight: $weight;
-  }
-}
-
-// Text decoration
-.underline {
-  text-decoration: underline;
-}
-
-.line-through {
-  text-decoration: line-through;
-}
-
-.no-underline {
-  text-decoration: none;
-}
-
-
-// Border radius
-@each $name, $value in $radii {
-  .rounded-#{$name} {
-    border-radius: $value;
+  .#{$mod}shadow-none#{$col} {
+    box-shadow: none;
   }
 
-  .rounded-t-#{$name} {
-    border-top-left-radius: $value;
-    border-top-right-radius: $value;
+  .#{$mod}shadow-sm#{$col} {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
-  .rounded-r-#{$name} {
-    border-top-right-radius: $value;
-    border-bottom-right-radius: $value;
+  .#{$mod}shadow#{$col} {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
 
-  .rounded-b-#{$name} {
-    border-bottom-right-radius: $value;
-    border-bottom-left-radius: $value;
+  .#{$mod}shadow-md#{$col} {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
-  .rounded-l-#{$name} {
-    border-top-left-radius: $value;
-    border-bottom-left-radius: $value;
-  }
-}
-
-// Border width
-@each $name, $width in $border-widths {
-  .border-#{$name} {
-    border-width: $width;
+  .#{$mod}shadow-lg#{$col} {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
-  .border-t-#{$name} {
-    border-top-width: $width;
+  .#{$mod}shadow-xl#{$col} {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 
-  .border-r-#{$name} {
-    border-right-width: $width;
+  .#{$mod}shadow-inner#{$col} {
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   }
 
-  .border-b-#{$name} {
-    border-bottom-width: $width;
+  .#{$mod}transition#{$col} {
+    transition-property: all;
+    transition-duration: 200ms;
   }
 
-  .border-l-#{$name} {
-    border-left-width: $width;
+  .#{$mod}transition-colors#{$col} {
+    transition-property: color, background-color, border-color;
+    transition-duration: 200ms;
   }
-}
 
-// Border style
-.border-solid {
-  border-style: solid;
-}
-
-.border-dashed {
-  border-style: dashed;
-}
-
-.border-dotted {
-  border-style: dotted;
-}
-
-.border-double {
-  border-style: double;
-}
-
-.border-none {
-  border-style: none;
-}
-
-// Opacity
-@each $name, $value in $opacity-levels {
-  .opacity-#{$name} {
-    opacity: $value;
+  .#{$mod}transition-opacity#{$col} {
+    transition-property: opacity;
+    transition-duration: 200ms;
   }
-}
 
-// Box shadows
-.shadow-none {
-  box-shadow: none;
-}
+  .#{$mod}transition-transform#{$col} {
+    transition-property: transform;
+    transition-duration: 200ms;
+  }
 
-.shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
+  .#{$mod}duration-100#{$col} {
+    transition-duration: 100ms;
+  }
 
-.shadow {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
+  .#{$mod}duration-200#{$col} {
+    transition-duration: 200ms;
+  }
 
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
+  .#{$mod}duration-300#{$col} {
+    transition-duration: 300ms;
+  }
 
-.shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
+  .#{$mod}duration-500#{$col} {
+    transition-duration: 500ms;
+  }
 
-.shadow-xl {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
+  .#{$mod}duration-700#{$col} {
+    transition-duration: 700ms;
+  }
 
-.shadow-inner {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-}
+  .#{$mod}duration-1000#{$col} {
+    transition-duration: 1000ms;
+  }
 
-// GTK-specific classes for transitions and animations
-.transition {
-  transition-property: all;
-  transition-duration: 200ms;
-}
+  .#{$mod}ease-linear#{$col} {
+    transition-timing-function: linear;
+  }
 
-.transition-colors {
-  transition-property: color, background-color, border-color;
-  transition-duration: 200ms;
-}
+  .#{$mod}ease-in#{$col} {
+    transition-timing-function: ease-in;
+  }
 
-.transition-opacity {
-  transition-property: opacity;
-  transition-duration: 200ms;
-}
+  .#{$mod}ease-out#{$col} {
+    transition-timing-function: ease-out;
+  }
 
-.transition-transform {
-  transition-property: transform;
-  transition-duration: 200ms;
-}
-
-.duration-100 {
-  transition-duration: 100ms;
-}
-
-.duration-200 {
-  transition-duration: 200ms;
-}
-
-.duration-300 {
-  transition-duration: 300ms;
-}
-
-.duration-500 {
-  transition-duration: 500ms;
-}
-
-.duration-700 {
-  transition-duration: 700ms;
-}
-
-.duration-1000 {
-  transition-duration: 1000ms;
-}
-
-.ease-linear {
-  transition-timing-function: linear;
-}
-
-.ease-in {
-  transition-timing-function: ease-in;
-}
-
-.ease-out {
-  transition-timing-function: ease-out;
-}
-
-.ease-in-out {
-  transition-timing-function: ease-in-out;
-}
-
-// Hover utilities (pseudo-classes work in GTK)
-// [class*="hover:"] {
-//   transition-property: all;
-//   transition-duration: 200ms;
-// }
-
-// GTK-specific animation classes
-.animate-none {
-  animation: none;
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    -gtk-icon-transform: rotate(1turn);
+  .#{$mod}ease-in-out#{$col} {
+    transition-timing-function: ease-in-out;
   }
 }

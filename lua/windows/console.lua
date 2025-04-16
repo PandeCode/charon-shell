@@ -1,10 +1,15 @@
-local astal = require("astal")
-local Widget = require("astal.gtk3.widget")
+local astal = require "astal"
+local Widget = require "astal.gtk3.widget"
 local Gdk = require("astal.gtk3").Gdk
 local Anchor = astal.require("Astal").WindowAnchor
 local bind = astal.bind
-local utils = require("lua.utils")
-local logger = require("lua.logger")
+local utils = require "lua.utils"
+local logger = require "lua.logger"
+
+local e = require "lua.extras.elements"
+local divv = e.divv
+local div = e.div
+local btn = e.btn
 
 -- Environment for console execution
 local consoleEnv = {
@@ -33,8 +38,19 @@ local consoleEnv = {
 	_G = _G,
 
 	-- Utility functions
-	inspect = function(obj)
-		return utils.Dump(obj)
+	inspect = utils.pinspect,
+
+	help = function()
+		return [[
+Console Help:
+- Define variables: x = 10
+- Define functions: function add(a,b) return a+b end
+- Access globals: _G.myVar or simply myVar
+- Use require: json = require("json")
+- Inspect objects: inspect(myTable)
+- Up/Down arrows: Navigate command history
+- Escape: Close console
+]]
 	end,
 }
 
@@ -42,10 +58,10 @@ local consoleEnv = {
 setmetatable(consoleEnv, { __index = _G })
 
 local function ConsoleWindow()
-	local history = astal.Variable({}) -- Command history
+	local history = astal.Variable {} -- Command history
 	local historyIndex = astal.Variable(0)
-	local displayLines = astal.Variable({ "hello" })
-	local code = astal.Variable("")
+	local displayLines = astal.Variable {}
+	local code = astal.Variable ""
 
 	consoleEnv.print = function(...)
 		local args = { ... }
@@ -73,14 +89,14 @@ local function ConsoleWindow()
 
 	-- Function to execute code in the console environment
 	local function executeCode(codeStr)
-		logger.debug("staring execute")
+		logger.debug "staring execute"
 
 		-- First try as an expression (with return)
 		local fn, loadErr = load("return " .. codeStr, "console", "t", consoleEnv)
 
 		-- If that fails, try as a statement
 		if not fn then
-			logger.debug("first try fail")
+			logger.debug "first try fail"
 			fn, loadErr = load(codeStr, "console", "t", consoleEnv)
 		end
 
@@ -88,14 +104,14 @@ local function ConsoleWindow()
 		if fn then
 			local success, result = pcall(fn)
 			if success then
-				logger.debug("Pcall'ed function")
+				logger.debug "Pcall'ed function"
 				-- Add command to history
 				local historyItems = history:get()
 				table.insert(historyItems, codeStr)
 				history:set(historyItems)
 				historyIndex:set(#historyItems + 1)
 
-				logger.debug("Handled History")
+				logger.debug "Handled History"
 				-- Display result
 				local lines = displayLines:get()
 				table.insert(lines, "> " .. codeStr)
@@ -107,7 +123,7 @@ local function ConsoleWindow()
 				displayLines:set(lines)
 				return result
 			else
-				logger.debug("Failed to pcall fn")
+				logger.debug "Failed to pcall fn"
 				-- Display error
 				local lines = displayLines:get()
 				table.insert(lines, "> " .. codeStr)
@@ -125,13 +141,59 @@ local function ConsoleWindow()
 		end
 	end
 
-	return Widget.Window({
+	local scrollable = Widget.Scrollable {
+		css = "min-height: 300px;  padding: 10px; border-radius: 5px;",
+		Widget.Box {
+			vertical = true,
+			hexpand = true,
+			vexpand = true,
+
+			displayLines(function(v)
+				local widgets = {}
+				for i, line in ipairs(v) do
+					local color = "#ddd"
+					local prefix = ""
+
+					if string.sub(line, 1, 1) == ">" then
+						color = "#88f" -- Command color
+					elseif string.sub(line, 1, 2) == "=>" then
+						color = "#8f8" -- Result color
+					elseif string.sub(line, 1, 5) == "Error" then
+						color = "#f88" -- Error color
+					end
+
+					table.insert(
+						widgets,
+						Widget.Label {
+							label = line,
+							hexpand = true,
+							css = "color: "
+								.. color
+								.. "; font-family: monospace; padding: 5px;"
+								.. (i % 2 == 0 and "background: black" or ""),
+							halign = "START",
+							wrap = true,
+						}
+					)
+				end
+
+				return Widget.Box {
+					vertical = true,
+					table.unpack(widgets),
+				}
+			end),
+			code(function() end), -- WARN: Do not remove things break if removed
+		},
+	}
+
+	return Widget.Window {
 		title = "Lua Console",
 		anchor = Anchor.TOP + Anchor.LEFT,
-		css = "min-width: 500px; min-height: 400px; padding: 10px; margin: 10px;",
+		css = "min-width: 500px; min-height: 400px;",
+		class_name = "rounded-lg",
 		keymode = "ON_DEMAND",
 		on_show = function()
-			code:set("")
+			code:set ""
 		end,
 		on_key_press_event = function(self, event)
 			if event.keyval == Gdk.KEY_Escape then
@@ -158,66 +220,21 @@ local function ConsoleWindow()
 				elseif idx == #historyItems then
 					idx = idx + 1
 					historyIndex:set(idx)
-					code:set("")
+					code:set ""
 				end
 				return true
 			end
 			return false
 		end,
-		Widget.Box({
-			css = "min-width: 480px; background: #333; padding: 10px; border-radius: 10px;",
-			vertical = true,
-			Widget.Label({
+		divv({
+			Widget.Label {
 				label = "Lua Console",
-				css = "font-weight: bold; color: #ddd; font-size: 16px; margin-bottom: 10px;",
-			}),
-			Widget.Scrollable({
-				css = "min-height: 300px; background: #222; padding: 10px; border-radius: 5px;",
-				Widget.Box({
-					vertical = true,
-					hexpand = true,
-					vexpand = true,
-
-					displayLines(function(v)
-						local widgets = {}
-						for i, line in ipairs(v) do
-							local color = "#ddd"
-							local prefix = ""
-
-							if string.sub(line, 1, 1) == ">" then
-								color = "#88f" -- Command color
-							elseif string.sub(line, 1, 2) == "=>" then
-								color = "#8f8" -- Result color
-							elseif string.sub(line, 1, 5) == "Error" then
-								color = "#f88" -- Error color
-							end
-
-							table.insert(
-								widgets,
-								Widget.Label({
-									label = line,
-									hexpand = true,
-									css = "color: "
-										.. color
-										.. "; font-family: monospace; padding: 5px;"
-										.. (i % 2 == 0 and "background: black" or ""),
-									halign = "START",
-									wrap = true,
-								})
-							)
-						end
-
-						return Widget.Box({
-							vertical = true,
-							table.unpack(widgets),
-						})
-					end),
-					code(function() end), -- WARN: Do not remove things break if removed
-				}),
-			}),
-			Widget.Box({
+				css = "font-weight: bold;  font-size: 16px; margin-bottom: 10px;",
+			},
+			scrollable,
+			Widget.Box {
 				css = "margin-top: 10px;",
-				Widget.Entry({
+				Widget.Entry {
 					hexpand = true,
 					placeholder_text = "Enter Lua code...",
 					text = bind(code):as(function(text)
@@ -231,45 +248,35 @@ local function ConsoleWindow()
 						local codeText = code:get()
 						if codeText and codeText ~= "" then
 							executeCode(codeText)
-							code:set("")
+							code:set ""
+
+							local adj = scrollable:get_vadjustment()
+							adj.value = adj.upper - adj.page_size
 						end
 					end,
-				}),
-				Widget.Button({
+				},
+				Widget.Button {
 					label = "Run",
 					css = "margin-left: 5px;",
 					on_clicked = function()
 						local codeText = code:get()
 						if codeText and codeText ~= "" then
 							executeCode(codeText)
-							code:set("")
+							code:set ""
 						end
 					end,
-				}),
-				Widget.Button({
+				},
+				Widget.Button {
 					label = "Clear",
 					css = "margin-left: 5px;",
 					on_clicked = function()
-						displayLines:set({})
+						displayLines:set {}
 					end,
-				}),
-			}),
-		}),
-	})
+				},
+			},
+		}, "bg-base00-90 rounded-lg m-2 p-2 border-solid border-base03-50 border-2", { css = "min-width: 480px;" }),
+	}
 end
 
--- Help text function
-consoleEnv.help = function()
-	return [[
-Console Help:
-- Define variables: x = 10
-- Define functions: function add(a,b) return a+b end
-- Access globals: _G.myVar or simply myVar
-- Use require: json = require("json")
-- Inspect objects: inspect(myTable)
-- Up/Down arrows: Navigate command history
-- Escape: Close console
-]]
-end
-
-return utils.mkPopupToggle(ConsoleWindow)
+local utils_a = require "lua.utils.astal"
+return utils_a.mkPopupToggle(ConsoleWindow)
