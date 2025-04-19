@@ -186,12 +186,12 @@ local function ConsoleWindow()
 		},
 	}
 
-	return Widget.Window {
-		title = "Lua Console",
-		anchor = Anchor.TOP + Anchor.LEFT,
-		css = "min-width: 500px; min-height: 400px;",
-		class_name = "rounded-lg",
-		keymode = "ON_DEMAND",
+	return Widget.EventBox {
+		-- title = "Lua Console",
+		-- anchor = Anchor.TOP + Anchor.LEFT,
+		-- css = "min-width: 500px; min-height: 400px;",
+		-- class_name = "rounded-lg",
+		-- keymode = "ON_DEMAND",
 		on_show = function()
 			code:set ""
 		end,
@@ -227,10 +227,6 @@ local function ConsoleWindow()
 			return false
 		end,
 		divv({
-			Widget.Label {
-				label = "Lua Console",
-				css = "font-weight: bold;  font-size: 16px; margin-bottom: 10px;",
-			},
 			scrollable,
 			Widget.Box {
 				css = "margin-top: 10px;",
@@ -274,9 +270,8 @@ local function ConsoleWindow()
 					end,
 				},
 			},
-		}, "bg-base00-90 rounded-lg m-2 p-2 border-solid border-base03-50 border-2", { css = "min-width: 480px;" }),
+		}, "bg-base00-90 rounded-lg m-2 p-2", { css = "min-width: 480px;" }),
 	}
 end
 
-local utils_a = require "lua.utils.astal"
-return utils_a.mkPopupToggle(ConsoleWindow)
+return ConsoleWindow

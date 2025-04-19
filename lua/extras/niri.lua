@@ -24,7 +24,7 @@ local clean_title = function(title)
 	-- stylua: ignore end
 end
 
-local focused = astal.Variable('{"title": "None"}'):poll(500, "niri msg --json focused-window", function(out)
+M.var_focused_window = astal.Variable('{"title": "None"}'):poll(500, "niri msg --json focused-window", function(out)
 	local parsed, _, err = json.decode(out, 1, nil)
 	if err then
 		print("Error parsing JSON:", err)
@@ -51,7 +51,7 @@ end)
 
 function M.FocusedClient()
 	return div({
-		focused(function(title)
+		M.var_focused_window(function(title)
 			if type(title) == "string" then
 				local ret = p(clean_title(title))
 

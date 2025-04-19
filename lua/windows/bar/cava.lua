@@ -1,19 +1,19 @@
-local astal = require("astal")
-local Widget = require("astal.gtk3.widget")
-local GLib = astal.require("GLib")
-local cairo = astal.require("cairo")
+local astal = require "astal"
+local Widget = require "astal.gtk3.widget"
+local GLib = astal.require "GLib"
+local cairo = astal.require "cairo"
 local Gdk = require("astal.gtk3").Gdk
 local Gtk = require("astal.gtk3").Gtk
-local Cava = astal.require("AstalCava")
+local Cava = astal.require "AstalCava"
 local bind = astal.bind
-local utils = require("lua.utils")
-local tailwind = require("lua.extras.tailwind")
+local utils = require "lua.utils"
+local tailwind = require "lua.extras.tailwind"
 local tcss = tailwind.tcss
 local toCSS = tailwind.toCSS
-local el = require("lua.extras.elements")
+local el = require "lua.extras.elements"
 local p = el.p
 local div = el.div
-local math = require("math")
+local math = require "math"
 
 return function(params)
 	params = params or {}
@@ -233,7 +233,7 @@ return function(params)
 		end,
 	}
 
-	local area = Widget.DrawingArea({
+	local area = Widget.DrawingArea {
 		expand = true,
 		["width-request"] = 150,
 		class_name = "transparent",
@@ -253,7 +253,7 @@ return function(params)
 
 			return true
 		end,
-	})
+	}
 
 	GLib.timeout_add(GLib.PRIORITY_DEFAULT, cava.framerate, function()
 		area:queue_draw()

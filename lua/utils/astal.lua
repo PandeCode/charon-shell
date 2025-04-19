@@ -11,6 +11,7 @@ local timing = 100
 function M.mkPopupToggleAnim(WindowChild, props, props_r)
 	local window = nil
 	local r_main = nil
+	local timeout = 10000
 	local window_visible = astal.Variable(false)
 
 	local function toggle()
@@ -19,6 +20,21 @@ function M.mkPopupToggleAnim(WindowChild, props, props_r)
 			GLib.timeout_add(GLib.PRIORITY_DEFAULT, timing, function()
 				window:hide()
 				window_visible:set(false)
+				return false
+			end)
+			GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, function()
+				if window_visible:get() then
+					return false
+				end
+				if timeout > 0 then
+					timeout = timeout - 1000
+					return true
+				end
+				r_main:destroy()
+				window:destroy()
+				window = nil
+				r_main = nil
+				collectgarbage "collect"
 				return false
 			end)
 		else
@@ -31,10 +47,12 @@ function M.mkPopupToggleAnim(WindowChild, props, props_r)
 				}, props_r))
 				window = Widget.Window(utils.merge(props, {
 					r_main,
+					class_name = "transparent",
 				}))
 			end
 			window:show_all()
 			window_visible:set(true)
+			timeout = 10000
 			GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, function()
 				r_main.reveal_child = true
 				return false

@@ -65,9 +65,18 @@ local function MediaPlayer(player)
 					ellipsize = "END",
 					halign = "START",
 				}),
-				btni(player_icon, nil, function()
-					player:raise()
-				end, { sensitive = bind(player, "can-raise") }),
+				div({
+					bind(player, "bus_name"):as(function(name)
+						if name == "org.mpris.MediaPlayer2.spotify" then
+							return btni(player_icon, nil, function()
+								(require "ts.windows.playlist").default()
+							end)
+						end
+					end),
+					btni(player_icon, nil, function()
+						player:raise()
+					end, { sensitive = bind(player, "can-raise") }),
+				}, nil, { spacing = 2 }),
 			}, "font-bold text-xl"),
 			Widget.Label {
 				halign = "START",

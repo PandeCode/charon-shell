@@ -5,7 +5,7 @@
     astal,
   }: let
     system = "x86_64-linux";
-    # pkgs = nixpkgs.legacyPackages.${system};
+
     pkgs = import nixpkgs {
       inherit system;
       overlays = [
@@ -15,6 +15,7 @@
         })
       ];
     };
+
     extraPackages =
       (with astal.packages.${system}; [
         io
@@ -43,13 +44,13 @@
         curl
         pkg-config
         inotify-tools
+        typescript-language-server
       ])
       ++ (
         with pkgs.luaPackages; [
           luaffi
           fennel
           tl
-
           luautf8
           jsregexp
 
@@ -59,6 +60,8 @@
           luafilesystem
           luasec
           luasocket
+
+          serpent
 
           luarocks-nix
 
@@ -73,6 +76,7 @@
       src = ./.;
     };
   };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     astal = {

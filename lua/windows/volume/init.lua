@@ -101,33 +101,32 @@ local function VolWindow()
 	}
 
 	return divv(
-			{
-				mk_line(speaker),
-				div {
-					p "Speakers",
-					btni("go-down-symbolic", nil, function()
-						r1.reveal_child = not r1.reveal_child
-					end),
-				},
-				r1,
-				div {
-					p "Audio Streams",
-					btni("go-down-symbolic", nil, function()
-						r2.reveal_child = not r2.reveal_child
-					end),
-				},
-				r2,
-				p "Microphones",
-				mk_line(microphone),
+		{
+			mk_line(speaker),
+			div {
+				p "Speakers",
+				btni("go-down-symbolic", "transparent", function()
+					r1.reveal_child = not r1.reveal_child
+				end),
 			},
-			"audio-sliders bg-base00-75 m-2 p-2 rounded-lg border-solid border-2 border-base04-90",
-			{
+			r1,
+			div {
+				p "Audio Streams",
+				btni("go-down-symbolic", "transparent", function()
+					r2.reveal_child = not r2.reveal_child
+				end),
+			},
+			r2,
+			p "Microphones",
+			mk_line(microphone),
+		},
+		"audio-sliders bg-base00-75 m-2 p-2 rounded-lg border-solid border-2 border-base04-90",
+		{
 
-				css = "min-width: 500px;",
-				spacing = 8,
-			}
-		)
-
+			css = "min-width: 500px;",
+			spacing = 8,
+		}
+	)
 end
 
 return utils_a.mkPopupToggleAnim(VolWindow, {

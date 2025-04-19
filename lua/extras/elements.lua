@@ -90,13 +90,13 @@ function M.btn(label, class_name, callback, extra)
 	return Widget.Button(utils.merge(base, extra or {}))
 end
 
-function M.btni(icon_name, class_name, callback, extra)
+function M.btni(icon_name, class_name, callback, extra, icon_extra)
 	local base = {
 		class_name = class_name or "",
 		on_clicked = callback or function()
 			logger.debug "Unused Button Callback"
 		end,
-		Widget.Icon { icon = icon_name },
+		Widget.Icon(utils.merge({ icon = icon_name }, icon_extra)),
 	}
 
 	return Widget.Button(utils.merge(base, extra or {}))

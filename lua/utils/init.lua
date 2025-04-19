@@ -151,6 +151,10 @@ function M.inspect(o)
 	end
 end
 
+function M.ninspect(obj)
+	return M.notify(M.inspect(obj))
+end
+
 function M.pinspect(obj)
 	return print(M.inspect(obj))
 end

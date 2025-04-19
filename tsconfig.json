@@ -1,0 +1,41 @@
+{
+    "$schema": "https://raw.githubusercontent.com/TypeScriptToLua/TypeScriptToLua/master/tsconfig-schema.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "plugins": [
+            {
+                "name": "typescript-tstl-plugin"
+            }
+        ],
+        "types": [
+            "lua-types/5.2"
+        ],
+        "lib": [
+            "ESNext"
+        ],
+        "moduleResolution": "Node",
+        "strict": true,
+        "allowJs": false,
+        "checkJs": false,
+        "jsx": "react",
+        "jsxFactory": "Elements.Create",
+        "jsxFragmentFactory": "Elements.Fragment",
+        "allowImportingTsExtensions": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns ": true
+    },
+    "tstl": {
+        "noResolvePaths": [
+            "astal",
+            "astal.gtk3.widget"
+        ],
+        "luaTarget": "5.2",
+        "noImplicitGlobalVariables": true,
+        "noImplicitSelf": true
+    },
+    "include": [
+        "ts/**/*.ts",
+        "ts/**/*.tsx"
+    ]
+}

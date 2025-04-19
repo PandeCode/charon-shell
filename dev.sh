@@ -57,7 +57,7 @@ inotifywait -m -r -e close_write,create,delete --format '%w%f' "$WATCH_DIR" | wh
 
         killall -9 lua
         if [ -f /tmp/debug ]; then
-            GTK_DEBUG=interactive lua init.lua &
+            GOBJECT_DEBUG=instance-count GTK_DEBUG=interactive lua init.lua &
             rm /tmp/debug
         else
             lua init.lua &

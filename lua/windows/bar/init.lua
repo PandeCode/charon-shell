@@ -9,6 +9,7 @@ local Network = astal.require "AstalNetwork"
 local Tray = astal.require "AstalTray"
 
 local Niri = require "lua.extras.niri"
+local utf8 = require "lua-utf8"
 
 local Media = require "lua.windows.bar.media"
 local Volume = require "lua.windows.bar.volume"
@@ -24,10 +25,22 @@ local elements = require "lua.extras.elements"
 local img = elements.img
 
 local btn = elements.btn
+local btni = elements.btni
+local div = elements.div
+local divv = elements.divv
+local i = elements.i
+local p = elements.p
+
+local react = require "tslib.react"
+
+-- require("ts.windows.stats").default()
 
 local function Logo()
 	return Widget.Button {
-		on_clicked = require "lua.windows.console",
+		-- on_clicked = require "lua.windows.console",
+		on_clicked = function()
+			require("ts.windows.stats").default()
+		end,
 		class_name = "transparent",
 		img("./media/nixos.png", 1, 1),
 	}
@@ -38,9 +51,7 @@ end
 
 local function SysTray()
 	local tray = Tray.get_default()
-
-	return Widget.Box {
-		class_name = "SysTray",
+	local child = Widget.Box {
 		bind(tray, "items"):as(function(items)
 			return map(items, function(item)
 				return Widget.MenuButton {
@@ -57,6 +68,25 @@ local function SysTray()
 				}
 			end)
 		end),
+	}
+
+	local r = Widget.Revealer {
+		child = child,
+		reveal_child = false,
+		transition_type = Gtk.RevealerTransitionType.SLIDE_LEFT,
+		transition_duration = 500,
+	}
+
+	local show, setShow = table.unpack(react.useState(false, function(v)
+		return v and "go-next-symbolic" or "go-previous-symbolic"
+	end))
+
+	return Widget.Box {
+		btni(show, "w-2 h-2 transparent rounded-full", function()
+			r.reveal_child = not r.reveal_child
+			setShow(r.reveal_child)
+		end),
+		r,
 	}
 end
 
@@ -93,23 +123,70 @@ local function BatteryLevel()
 		},
 		Widget.Label {
 			label = bind(bat, "percentage"):as(function(p)
-				return tostring(math.floor(p * 100)) .. " %"
+				return tostring(math.floor(p * 100))
 			end),
 		},
 	}
 end
 
-local function Time(format)
+local function Time()
+	local formats = {
+		"%d/%m/%Y %H:%M",
+		"%T %a %d %b %y", -- 24-hour time Day Date Month Year
+		"%I:%M:%S %p - %A", -- 12-hour time with AM/PM and full day
+		"%d/%m/%Y %H:%M", -- European style date and 24-hour time
+		"%B %d, %Y - %I:%M %p", -- Month name Day, Year - 12-hour time
+		"%Y-%m-%d %H:%M:%S", -- ISO 8601-ish
+		"It's %A, the %d of %B!", -- Fun sentence style
+		-- "Week %U - %H:%M:%S", -- Week number with time
+		-- "Today: %x — Now: %X", -- Local date and time format
+	}
+	local format = 1
+
+	local tooltip = Variable ""
 	local time = Variable(""):poll(1000, function()
-		return GLib.DateTime.new_now_local():format(format)
+		tooltip:set(GLib.DateTime.new_now_local():format(formats[7]))
+		return GLib.DateTime.new_now_local():format(formats[format])
 	end)
 
-	return Widget.Label {
-		class_name = "Time",
-		on_destroy = function()
-			time:drop()
+	return Widget.EventBox {
+		on_button_press_event = function()
+			format = format % #formats + 1
 		end,
-		label = time(),
+		Widget.Label {
+			on_destroy = function()
+				time:drop()
+			end,
+			label = time(),
+			tooltip_text = tooltip(),
+		},
+	}
+end
+
+local function WindowName()
+	local child = Niri.FocusedClient()
+	local r = Widget.Revealer {
+		child = child,
+		reveal_child = false,
+		transition_type = Gtk.RevealerTransitionType.SLIDE_RIGHT,
+		transition_duration = 500,
+	}
+
+	local show, setShow = table.unpack(react.useState(false, function(v)
+		return v and "go-previous-symbolic" or "go-next-symbolic"
+	end))
+
+	return Widget.Box {
+		r,
+		btni(show, "transparent", function()
+			r.reveal_child = not r.reveal_child
+			setShow(r.reveal_child)
+			if r.reveal_child then
+				Niri.var_focused_window:start_poll()
+			else
+				Niri.var_focused_window:stop_poll()
+			end
+		end, nil, { pixel_size = 1 }),
 	}
 end
 
@@ -124,6 +201,7 @@ return function(gdkmonitor)
 		mirror = false, -- Enable mirror effect (for bars and wave)
 		bars = 32, -- Number of bars/sample points
 	}
+
 	local m = Widget.Box { Media(), css = "min-width: 200px;" }
 	local center = Widget.EventBox {
 		Widget.Overlay {
@@ -145,29 +223,28 @@ return function(gdkmonitor)
 		anchor = Anchor.TOP + Anchor.LEFT + Anchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
 		Widget.CenterBox {
-			class_name = "m-1 rounded-lg bg-base00-90",
+			class_name = "m-1 mr-0 rounded-lg transparent",
 			Widget.Box {
 				halign = "START",
 				Logo(),
 				Niri.Workspaces(),
-				Niri.FocusedClient(),
+				WindowName(),
+				class_name = "m-1 pr-2 rounded-lg bg-base00-90",
 			},
 			center,
 			Widget.Box {
+				class_name = "m-1 mr-0 rounded-lg bg-base00-90",
 				halign = "END",
 				css = "padding-right: 15px",
 				SysTray(),
 				Wifi(),
 				Volume(),
 				BatteryLevel(),
-				Time "%T %a %d %b %y",
-				Widget.Button {
-					class_name = "bg-base00 hover-bg-base01",
-					on_clicked = require "lua.windows.center",
-					Widget.Icon {
-						icon = "open-menu-symbolic",
-					},
-				},
+				require("ts.windows.bar.stats").default(),
+				Time(),
+				btni("open-menu-symbolic", "transparent", function()
+					require("ts.windows.center").default()
+				end),
 			},
 		},
 	}
