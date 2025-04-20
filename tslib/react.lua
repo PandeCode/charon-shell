@@ -150,6 +150,10 @@ end
 local function hash(str)
     return astal.exec(string.format("sh -c \"printf '%%s' '%s' | md5sum | cut -d' ' -f1\"", str))
 end
+function ____exports.removeCache(url)
+    local path = CACHE_DIR .. hash(url)
+    return os.remove(path)
+end
 function ____exports.useFetchCache(url, preprocess)
     if preprocess == nil then
         preprocess = function(out) return out end

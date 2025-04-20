@@ -114,4 +114,18 @@ function M.ensure_icon(...)
 	return args[#args] or default
 end
 
+function M.formatTime(ts)
+	local date = GLib.DateTime.new_from_unix_local(ts)
+	return date:format "%X" -- Locale-specific time
+end
+function M.formatHour(ts)
+	local date = GLib.DateTime.new_from_unix_local(ts)
+	return string.format("%02d:00", date:get_hour())
+end
+
+function M.formatDate(ts)
+	local date = GLib.DateTime.new_from_unix_local(ts)
+	return date:format "%x" -- Locale-specific date
+end
+
 return M

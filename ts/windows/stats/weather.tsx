@@ -10,6 +10,11 @@ import {
   useFetchCache,
 } from "../../../tslib/react";
 const { inspect, ninspect } = require("../../../lua/utils/init.lua");
+const {
+  formatTime,
+  formatHour,
+  formatDate,
+} = require("../../../lua/utils/astal.lua");
 
 const json = require("dkjson");
 
@@ -18,19 +23,6 @@ const WEATHER_URL = `https://api.open-meteo.com/v1/forecast?latitude=9.936855359
 export default function () {
   const data = useFetchCache<Weather>(WEATHER_URL, json.decode);
 
-  // Helpers
-  function formatTime(ts: number) {
-    return "impl";
-    // return new Date(ts * 1000).toLocaleTimeString();
-  }
-  function formatHour(ts: number) {
-    // return `${new Date(ts * 1000).getHours()}:00`;
-    return "impl";
-  }
-  function formatDate(ts: number) {
-    // return new Date(ts * 1000).toLocaleDateString();
-    return "impl";
-  }
   function windDir(deg: number) {
     const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
     return dirs[Math.round(deg / 45) % 8];
@@ -42,57 +34,53 @@ export default function () {
         if (!v) return <></>;
 
         return (
-          <div
-            vertical={true}
-            spacing={4}
-            className="bg-base01 text-base05 p-4"
-          >
+          <div vertical spacing={4} className="bg-base01 text-base05 p-4">
             <grid row-spacing={10} column-spacing={10}>
               <griditem w={12} h={3} x={0} y={0}>
-                <div
-                  vertical={true}
-                  spacing={1}
-                  className="bg-base02 p-3 rounded-lg"
-                >
-                  <p className="text-base0C text-xl">Current Weather</p>
-                  <div vertical={true} spacing={1}>
-                    <p>Time: {formatTime(v.current.time)}</p>
-                    <p>
+                <div vertical spacing={1} className="bg-base02 p-3 rounded-lg">
+                  <div className="text-base0C text-xl">Current Weather</div>
+                  <div vertical spacing={1}>
+                    <div>Time: {formatTime(v.current.time)}</div>
+                    <div>
                       Temp: {v.current.temperature_2m}
                       {v.current_units.temperature_2m}
-                    </p>
-                    <p>
+                    </div>
+                    <div>
                       Feels Like: {v.current.apparent_temperature}
                       {v.current_units.apparent_temperature}
-                    </p>
-                    <p>
+                    </div>
+                    <div>
                       Humidity: {v.current.relative_humidity_2m}
                       {v.current_units.relative_humidity_2m}
-                    </p>
-                    <p>
+                    </div>
+                    <div>
                       Wind: {v.current.wind_speed_10m}
                       {v.current_units.wind_speed_10m}{" "}
                       {windDir(v.current.wind_direction_10m)}
-                    </p>
+                    </div>
                   </div>
                 </div>
               </griditem>
 
               <griditem w={12} h={3} x={0} y={3}>
-                <div
-                  vertical={true}
-                  spacing={1}
-                  className="bg-base02 p-3 rounded-lg"
-                >
-                  <p className="text-base0C text-xl">Hourly Forecast</p>
-                  <grid>
+                <div vertical spacing={1} className="bg-base02 p-3 rounded-lg">
+                  <div className="text-base0C text-xl">Hourly Forecast</div>
+                  <grid row-spacing={10} column-spacing={10}>
                     {v.hourly.time.slice(0, 12).map((t, i) => (
                       <griditem w={1} h={1} x={i} y={0}>
-                        <div vertical={true} spacing={1} className="p-1">
+                        <div vertical spacing={1} className="p-1">
                           <p className="text-base07">{formatHour(t)}</p>
-                          <p className="text-base0A">
-                            {v.hourly.temperature_2m[i]}°
-                          </p>
+                          <div vertical className="text-base0A">
+                            {v.hourly.temperature_2m[i]}
+                            {v.hourly.relative_humidity_2m[i]}
+                            {v.hourly.wind_speed_10m[i]}
+                            {v.hourly.visibility[i]}
+                            {v.hourly.cloud_cover[i]}
+                            {v.hourly.surface_pressure[i]}
+                            {v.hourly.apparent_temperature[i]}
+                            {v.hourly.precipitation_probability[i]}
+                            {v.hourly.precipitation[i]}
+                          </div>
                         </div>
                       </griditem>
                     ))}
@@ -101,21 +89,17 @@ export default function () {
               </griditem>
 
               <griditem w={12} h={2} x={0} y={6}>
-                <div
-                  vertical={true}
-                  spacing={1}
-                  className="bg-base02 p-3 rounded-lg"
-                >
-                  <p className="text-base0C text-xl">Daily Forecast</p>
-                  <grid>
+                <div vertical spacing={1} className="bg-base02 p-3 rounded-lg">
+                  <div className="text-base0C text-xl">Daily Forecast</div>
+                  <grid row-spacing={10} column-spacing={10}>
                     {v.daily.time.slice(0, 7).map((t, i) => (
                       <griditem w={1} h={1} x={i} y={0}>
-                        <div vertical={true} spacing={1}>
-                          <p className="text-base07">{formatDate(t)}</p>
-                          <p className="text-base0A">
+                        <div vertical spacing={1}>
+                          <div className="text-base07">{formatDate(t)}</div>
+                          <div className="text-base0A">
                             H {v.daily.temperature_2m_max[i]}° L{" "}
                             {v.daily.temperature_2m_min[i]}°
-                          </p>
+                          </div>
                         </div>
                       </griditem>
                     ))}

@@ -143,6 +143,10 @@ function hash(str: string): string {
   );
 }
 
+export function removeCache(url: string) {
+  const path = CACHE_DIR + hash(url);
+  return os.remove(path);
+}
 export function useFetchCache<T>(
   url: string,
   preprocess: (out: string) => T = (out: string) => out as T,
