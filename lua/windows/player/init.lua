@@ -190,7 +190,10 @@ local function Players()
 		css = css { minWidth = "500px" },
 		class_name = "rounded-lg bg-base00-90 m-2 p-2 border-solid border-base02 border-2 shadow",
 		bind(mpris, "players"):as(function(players)
-			return map(players, MediaPlayer)
+			return #players > 0 and map(players, MediaPlayer)
+				or Widget.Box {
+					Widget.Label { label = "No player running" },
+				}
 		end),
 	}
 end

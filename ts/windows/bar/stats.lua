@@ -5,9 +5,11 @@ local __TS__ArrayForEach = ____lualib.__TS__ArrayForEach
 local __TS__ArrayMap = ____lualib.__TS__ArrayMap
 local ____exports = {}
 local ____react = require("tslib.react")
+local Astal = ____react.Astal
 local Gtk = ____react.Gtk
 local Elements = ____react.Elements
 local Variable = ____react.Variable
+local toCSS = ____react.toCSS
 local ____require_result_0 = require("lua.utils.init")
 local ninspect = ____require_result_0.ninspect
 local function createWatcher(script, sleepTime)
@@ -27,7 +29,7 @@ local function color(prefix)
         local c, t = table.unpack(__TS__StringSplit(txt, " "))
         return Elements.Create(
             "p",
-            {css = {color = c}},
+            {css = {color = string.sub(c, 1, 7)}},
             (prefix .. __TS__StringPadStart(t, 3, " ")) .. "%"
         )
     end
@@ -55,7 +57,7 @@ function ____exports.default()
                     if el then
                         local out = __TS__StringSplit(val, " ")
                         el.value = (tonumber(out[2]) or 0) / 100
-                        el.parent.css = "color: " .. out[1]
+                        el.parent.css = ("color: " .. string.sub(out[1], 1, 7)) .. ";"
                         el.parent.tooltip_markup = ((("<span foreground=\"" .. out[1]) .. "\" size=\"large\">") .. out[2]) .. " %</span>"
                     end
                 end
@@ -85,32 +87,44 @@ function ____exports.default()
             nil,
             Elements.Create(
                 "revealer",
-                {
-                    reveal_child = true,
-                    transition_type = Gtk.RevealerTransitionType.SLIDE_RIGHT,
-                    transition_duration = 500,
-                    ref = r1Ref,
-                    className = "px-3 py-0 rounded-full bg-base01 "
-                },
-                __TS__ArrayMap(
-                    {{"", refMem}, {"󰍛", refSwap}, {"", refCpu}},
-                    function(____, ____bindingPattern0)
-                        local icon
-                        icon = ____bindingPattern0[1]
-                        local ref = ____bindingPattern0[2]
-                        return Elements.Create(
-                            "overlay",
-                            nil,
-                            Elements.Create("p", {className = "text-2xl"}, icon)
-                        )
-                    end
+                {reveal_child = true, transition_type = Gtk.RevealerTransitionType.SLIDE_RIGHT, transition_duration = 500, ref = r1Ref},
+                Elements.Create(
+                    "div",
+                    {spacing = 10, className = "px-2 rounded-full bg-base01"},
+                    __TS__ArrayMap(
+                        {{"", refCpu}, {"", refMem}, {"", refSwap}},
+                        function(____, ____bindingPattern0)
+                            local ref
+                            local icon
+                            icon = ____bindingPattern0[1]
+                            ref = ____bindingPattern0[2]
+                            return Elements.Create(
+                                "overlay",
+                                nil,
+                                Elements.Create(
+                                    Astal.CircularProgress,
+                                    {
+                                        visible = true,
+                                        rounded = true,
+                                        ["start-at"] = 0,
+                                        ["end-at"] = 1,
+                                        value = 0,
+                                        css = toCSS({fontSize = "3px"}),
+                                        ref = ref,
+                                        width = 34
+                                    }
+                                ),
+                                Elements.Create("p", {className = "text-2xl"}, icon)
+                            )
+                        end
+                    )
                 )
             ),
             Elements.Create(
                 "revealer",
                 {reveal_child = false, transition_type = Gtk.RevealerTransitionType.SLIDE_RIGHT, transition_duration = 500, ref = r2Ref},
                 __TS__ArrayMap(
-                    {{cpu, ""}, {swap, "󰍛"}, {mem, ""}},
+                    {{cpu, ""}, {mem, ""}, {swap, ""}},
                     function(____, ____bindingPattern0)
                         local icon
                         local v

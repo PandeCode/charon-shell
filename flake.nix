@@ -60,6 +60,7 @@
           luafilesystem
           luasec
           luasocket
+          luaposix
 
           serpent
 

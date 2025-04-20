@@ -23,204 +23,59 @@ local function Center()
         "div",
         {vertical = true, css = {minWidth = "30em"}, spacing = 10, className = "bg-base00-90  m-4 p-4 rounded-lg border-base03-90 border-solid border-2"},
         Elements.Create(
-            "scrollable",
-            {hscrollbar_policy = Gtk.PolicyType.NEVER, vscrollbar_policy = Gtk.PolicyType.AUTOMATIC, className = "border-none"},
-            Elements.Create(
-                "div",
-                {vertical = true, spacing = 9, className = "p-2"},
-                Elements.Create("div", {vexpand = true}),
-                Elements.Create(
-                    "button",
-                    {
-                        width = 200,
-                        halign = "CENTER",
-                        onClick = fexe("bg.sh rand")
-                    },
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh rand")},
-                    "Rand Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh last")},
-                    "Last Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh next")},
-                    "Next Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh prev")},
-                    "Prev Bg"
-                ),
-                Elements.Create(
-                    "button",
-                    {onClick = fexe("bg.sh reset")},
-                    "Reset Bg"
-                )
-            ),
-            Elements.Create("hr", nil),
+            "div",
+            {vertical = true, spacing = 9, className = "p-2"},
             Elements.Create(
                 "button",
-                {onClick = function() return astal.exec_async(
-                    "theme.sh dark",
-                    function() return ps.restart() end
-                ) end},
-                "Dark Mode"
+                {
+                    width = 200,
+                    halign = "CENTER",
+                    onClick = fexe("bg.sh rand")
+                },
+                "Rand Bg"
             ),
             Elements.Create(
                 "button",
-                {onClick = function() return astal.exec_async(
-                    "theme.sh light",
-                    function() return ps.restart() end
-                ) end},
-                "Light Mode"
+                {onClick = fexe("bg.sh rand")},
+                "Rand Bg"
+            ),
+            Elements.Create(
+                "button",
+                {onClick = fexe("bg.sh last")},
+                "Last Bg"
+            ),
+            Elements.Create(
+                "button",
+                {onClick = fexe("bg.sh next")},
+                "Next Bg"
+            ),
+            Elements.Create(
+                "button",
+                {onClick = fexe("bg.sh prev")},
+                "Prev Bg"
+            ),
+            Elements.Create(
+                "button",
+                {onClick = fexe("bg.sh reset")},
+                "Reset Bg"
             )
+        ),
+        Elements.Create("hr", nil),
+        Elements.Create(
+            "button",
+            {onClick = function() return astal.exec_async(
+                "theme.sh dark",
+                function() return ps.restart() end
+            ) end},
+            "Dark Mode"
+        ),
+        Elements.Create(
+            "button",
+            {onClick = function() return astal.exec_async(
+                "theme.sh light",
+                function() return ps.restart() end
+            ) end},
+            "Light Mode"
         )
     )
 end

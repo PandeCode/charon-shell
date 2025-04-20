@@ -19,6 +19,14 @@ local function Stats()
             Elements.Create(
                 Elements.Fragment,
                 nil,
+                Weather()
+            ),
+            "Weather"
+        },
+        {
+            Elements.Create(
+                Elements.Fragment,
+                nil,
                 Sysinfo()
             ),
             "Sysinfo"
@@ -30,14 +38,6 @@ local function Stats()
                 Console()
             ),
             "Console"
-        },
-        {
-            Elements.Create(
-                Elements.Fragment,
-                nil,
-                Weather()
-            ),
-            "Weather"
         }
     ))
     return Elements.Create("div", {vertical = true, css = {minWidth = "1080px", minHeight = "720px"}, spacing = 10, className = "bg-base00-90 m-4 p-4 rounded-lg border-base03-90 border-solid border-2"}, switcher, stack)

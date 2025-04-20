@@ -9,9 +9,9 @@ const Console = require("../../../lua/windows/console.lua");
 
 function Stats() {
   const [stack, switcher] = useStack(
+    [<>{Weather()}</>, "Weather"],
     [<>{Sysinfo()}</>, "Sysinfo"],
     [<>{Console()}</>, "Console"],
-    [<>{Weather()}</>, "Weather"],
   );
 
   return (

@@ -2,7 +2,7 @@ local json = require "dkjson" -- dkjson for JSON parsing
 local config_path = os.getenv "HOME" .. "/.config/charon-shell/config.json"
 
 return {
-	default_image_path = "/home/shawn/dev/lua/charon-shell/media/nixos.png",
+	default_image_path = "/home/shawn/dev/lua/charon-shell/media/nix.svg",
 
 	colors = (function()
 		local s, colors = pcall(require, os.getenv "HOME" .. "/.config/stylix/nvim.lua")

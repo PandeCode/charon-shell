@@ -28,6 +28,8 @@
     "tstl": {
         "noResolvePaths": [
             "astal",
+            "posix",
+            "dkjson",
             "astal.gtk3.widget"
         ],
         "luaTarget": "5.2",

@@ -1,8 +1,10 @@
 --[[ Generated with https://github.com/TypeScriptToLua/TypeScriptToLua ]]
 local ____exports = {}
 local _astal = require("astal")
+local stat = require("posix").stat
 local astal = _astal
 ____exports.astal = astal
+local CACHE_DIR = "/home/shawn/.cache/charon-shell/fetch/"
 local Elements = require("tslib.Elements")
 local Gdk = astal.require("Gdk")
 local Gtk = astal.require("Gtk")
@@ -131,5 +133,41 @@ function ____exports.useFile(path, preprocess)
         end
     )
     return state
+end
+function ____exports.useFetch(url, preprocess)
+    if preprocess == nil then
+        preprocess = function(out) return out end
+    end
+    local variable, setVariable = table.unpack(____exports.useState())
+    astal.exec_async(
+        "curl -s " .. url,
+        function(out)
+            setVariable(preprocess(out))
+        end
+    )
+    return variable
+end
+local function hash(str)
+    return astal.exec(string.format("sh -c \"printf '%%s' '%s' | md5sum | cut -d' ' -f1\"", str))
+end
+function ____exports.useFetchCache(url, preprocess)
+    if preprocess == nil then
+        preprocess = function(out) return out end
+    end
+    local path = CACHE_DIR .. hash(url)
+    if stat(path) ~= nil then
+        local variable, setVariable = table.unpack(____exports.useState())
+        astal.read_file_async(
+            path,
+            function(out) return setVariable(preprocess(out)) end
+        )
+        return variable
+    else
+        local function new_preprocess(out)
+            astal.write_file_async(path, out)
+            return preprocess(out)
+        end
+        return ____exports.useFetch(url, new_preprocess)
+    end
 end
 return ____exports

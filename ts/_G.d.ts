@@ -1,7 +1,9 @@
 // --- Common Types ---
-declare type Binding<_> = any;
-declare type Variable<_> = any;
-declare type SVariable<T> = Binding<Variable<T>> & { _v: Variable<T> };
+declare type Binding<_> = {};
+declare type Variable<_> = {};
+declare type SVariable<T> = Binding<Variable<T>> & {
+  _v: Variable<T> & CallableFunction;
+};
 
 type TransitionType =
   | "NONE"
@@ -105,7 +107,12 @@ declare namespace JSX {
   interface IntrinsicElements {
     div: Div;
     box: Div;
-    grid: Div;
+    grid: Div & {
+      "column-homogeneous"?: boolean;
+      "row-homogeneous"?: boolean;
+      "column-spacing"?: number;
+      "row-spacing"?: number;
+    };
     griditem: Div & { x: number; y: number; w: number; h: number };
     p: Div;
     span: Widget & { vertical?: boolean };

@@ -26,3 +26,18 @@ astal.exec_async(
   },
 );
 ```
+
+There seems to be a bug the the exec function of astal, (astal.exec{\_async}, Variable.{poll,watch})
+when you use
+
+```lua
+{"bash", "-c", "prog | prog2"}
+```
+
+instead of
+
+```lua
+"bash -c 'prog | prog2'"
+```
+
+Seems to be a some form of Schrödinger's bug.

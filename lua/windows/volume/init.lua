@@ -1,4 +1,5 @@
 local astal = require "astal"
+local Astal = astal.require "Astal"
 local Gtk = require("astal.gtk3").Gtk
 local Widget = require "astal.gtk3.widget"
 local GLib = astal.require "GLib"
@@ -13,6 +14,7 @@ local div = elements.div
 local divv = elements.divv
 local p = elements.p
 local btni = elements.btni
+local btn = elements.btn
 local i = elements.i
 
 local mute_btn = function(endpoint)
@@ -50,8 +52,9 @@ local mk_line = function(source)
 	return divv(
 		{
 			div {
-				Widget.CenterBox {
+				Widget.Box {
 					hexpand = true,
+					spacing = 10,
 					bind(source, "icon"):as(function(v)
 						if v == nil then
 							return v
@@ -62,20 +65,44 @@ local mk_line = function(source)
 						end
 						return i(v .. _)
 					end),
-					p(bind(source, "name")),
-					audio_percent(source),
+					p(bind(source, "name"), nil, { tooltip_text = bind(source, "path") }),
+					p(bind(source, "description"):as(function(d)
+						return "(" .. d .. ")"
+					end)),
+					p(bind(source, "media-class")),
 				},
 			},
-			div {
-				div({ mute_btn(source) }, "pr-2"),
-				audio_slider(source),
-			},
+			div(
+				{
+					div { mute_btn(source) },
+					audio_slider(source),
+					audio_percent(source),
+				},
+				nil,
+				{
+					spacing = 10,
+				}
+			),
 		},
-		"border-solid border-base04-90 border-2 shadow-lg m-2 p-2 rounded-lg bg-base00-90",
+		"border-none shadow-lg m-2 p-2 rounded-lg bg-base00-90",
 		{
 			hexpand = true,
+			spacing = 10,
 		}
 	)
+end
+
+local function mk_revealer(s, audio)
+	return Widget.Revealer {
+		child = bind(audio, s):as(function(l)
+			return #l > 0 and divv(utils.map(l, function(e)
+				return mk_line(e)
+			end)) or p("No " .. s)
+		end),
+		reveal_child = true,
+		transition_type = Gtk.RevealerTransitionType.SLIDE_DOWN,
+		transition_duration = 500,
+	}
 end
 
 local function VolWindow()
@@ -83,38 +110,34 @@ local function VolWindow()
 	local speaker = WpAudio:get_default_speaker()
 	local microphone = WpAudio:get_default_microphone()
 
-	local r1 = Widget.Revealer {
-		child = divv(utils.map(WpAudio:get_audio():get_speakers(), function(e)
-			return mk_line(e)
-		end)),
-		reveal_child = false,
-		transition_type = Gtk.RevealerTransitionType.SLIDE_DOWN,
-		transition_duration = 500,
-	}
-	local r2 = Widget.Revealer {
-		child = divv(utils.map(WpAudio:get_audio():get_streams(), function(e)
-			return mk_line(e)
-		end)),
-		reveal_child = false,
-		transition_type = Gtk.RevealerTransitionType.SLIDE_DOWN,
-		transition_duration = 500,
-	}
+	local audio = WpAudio:get_audio()
+
+	local r1 = mk_revealer("speakers", audio)
+	local r2 = mk_revealer("streams", audio)
 
 	return divv(
 		{
 			mk_line(speaker),
-			div {
-				p "Speakers",
-				btni("go-down-symbolic", "transparent", function()
+			Widget.EventBox {
+				on_button_press_event = function()
 					r1.reveal_child = not r1.reveal_child
-				end),
+				end,
+				class_name = "transparent",
+				div {
+					p "Speakers",
+					i "go-down-symbolic",
+				},
 			},
 			r1,
-			div {
-				p "Audio Streams",
-				btni("go-down-symbolic", "transparent", function()
+			Widget.EventBox {
+				on_button_press_event = function()
 					r2.reveal_child = not r2.reveal_child
-				end),
+				end,
+				class_name = "transparent",
+				div {
+					p "Audio Streams",
+					i "go-down-symbolic",
+				},
 			},
 			r2,
 			p "Microphones",

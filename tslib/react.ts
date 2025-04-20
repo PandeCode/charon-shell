@@ -1,9 +1,13 @@
 // @ts-ignore
 import _astal = require("astal");
+
+const stat = require("posix").stat;
 // const Widget = astal.require.Widget;
 
 const astal = _astal;
 export { astal };
+
+const CACHE_DIR = "/home/shawn/.cache/charon-shell/fetch/"; // TODO move
 
 // @ts-ignore
 const Elements = require("./Elements.lua");
@@ -40,7 +44,7 @@ export function sh(cmd: string) {
 }
 
 export function useState<T>(
-  defaultValue: T,
+  defaultValue: T | undefined = undefined,
   getter: (s: T) => T = (s) => s,
 ): [SVariable<T>, (fn: T | ((prev: T) => T)) => any, Variable<T>] {
   const variable: Variable<T> = Variable<T>(defaultValue);
@@ -120,4 +124,39 @@ export function useFile(path: string, preprocess?: (out: string) => string) {
     }
   });
   return state;
+}
+
+export function useFetch<T>(
+  url: string,
+  preprocess: (out: string) => T = (out: string) => out as T,
+): SVariable<T> {
+  const [variable, setVariable] = useState<T>();
+  astal.exec_async("curl -s " + url, (out: string) => {
+    setVariable(preprocess(out));
+  });
+  return variable;
+}
+
+function hash(str: string): string {
+  return astal.exec(
+    string.format(`sh -c "printf '%%s' '%s' | md5sum | cut -d' ' -f1"`, str),
+  );
+}
+
+export function useFetchCache<T>(
+  url: string,
+  preprocess: (out: string) => T = (out: string) => out as T,
+) {
+  const path = CACHE_DIR + hash(url);
+  if (stat(path) != null) {
+    const [variable, setVariable] = useState<T>();
+    astal.read_file_async(path, (out: string) => setVariable(preprocess(out)));
+    return variable;
+  } else {
+    const new_preprocess = (out: string) => {
+      astal.write_file_async(path, out);
+      return preprocess(out);
+    };
+    return useFetch<T>(url, new_preprocess);
+  }
 }

@@ -63,12 +63,12 @@ local function CategorySection(____bindingPattern0)
             {vertical = true, className = "ml-2"},
             __TS__ArrayMap(
                 stats,
-                function(____, ____bindingPattern0, index)
+                function(____, ____bindingPattern0)
                     local v
                     local k
                     k = ____bindingPattern0[1]
                     v = ____bindingPattern0[2]
-                    return Elements.Create(StatItem, {key = index, label = k, value = v})
+                    return Elements.Create(StatItem, {label = k, value = v})
                 end
             )
         )

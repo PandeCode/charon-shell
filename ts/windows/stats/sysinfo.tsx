@@ -49,8 +49,8 @@ function CategorySection({
     <div vertical className="mb-2">
       <p className="text-base0D font-bold mb-1">{title}</p>
       <div vertical className="ml-2">
-        {stats.map(([k, v], index) => (
-          <StatItem key={index} label={k} value={v} />
+        {stats.map(([k, v]) => (
+          <StatItem label={k} value={v} />
         ))}
       </div>
     </div>

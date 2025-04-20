@@ -36,14 +36,44 @@ local react = require "tslib.react"
 -- require("ts.windows.stats").default()
 
 local function Logo()
-	return Widget.Button {
+	local btn = Widget.Button {
 		-- on_clicked = require "lua.windows.console",
 		on_clicked = function()
 			require("ts.windows.stats").default()
 		end,
 		class_name = "transparent",
-		img("./media/nixos.png", 1, 1),
+		img("./media/nix.svg", 1, 1),
 	}
+	local fixed = Gtk.Fixed {
+		visible = true,
+	}
+	fixed:add(btn)
+
+	local angle = 0
+	local time = 0
+
+	local nixRunning = astal.Variable(false):poll(5000, "bash -c 'pidof nix; echo $?'", function(out)
+		if out == "1" then
+			return false
+		else
+			return true
+		end
+	end)
+
+	astal.interval(42, function()
+		if nixRunning:get() then
+			time = time + 0.042
+			angle = angle + 2 -- Spin
+			local x = math.sin(time * 10) * 10 -- Shake (left-right)
+			-- local y =  math.sin(time * 2) * 10 -- Bob (up-down)
+			fixed:move(btn, x, 0)
+		else
+			fixed:move(btn, 0, 0)
+		end
+		return true
+	end)
+
+	return fixed
 end
 local function Calender()
 	return elements.btni("x-office-calendar-symbolic", nil, require "lua.windows.calender")
@@ -152,11 +182,13 @@ local function Time()
 	return Widget.EventBox {
 		on_button_press_event = function()
 			format = format % #formats + 1
+			time:set(GLib.DateTime.new_now_local():format(formats[format]))
 		end,
 		Widget.Label {
 			on_destroy = function()
 				time:drop()
 			end,
+			class_name = "transition",
 			label = time(),
 			tooltip_text = tooltip(),
 		},

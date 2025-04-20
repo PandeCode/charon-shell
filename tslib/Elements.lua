@@ -12,6 +12,8 @@ local mappings = {
 	onDestroy = "on_destroy",
 	width = "width-request",
 	height = "height-request",
+	colgap = "column-spacing",
+	rowgap = "row-spacing",
 }
 
 local function attach_children(grid, children)
@@ -95,8 +97,12 @@ local function Create(name, props, ...)
 		end
 		returnValue = { widget = Create("div", props, ...), x = x, y = y, w = w, h = h }
 	elseif name == "p" or name == "label" or name == "span" then
-		local labelText = (type(children[1]) == "string" or (children[1] ~= nil and children[1].emitter ~= nil))
-				and { label = children[1] }
+		local labelText = (
+			type(children[1]) == "number"
+			or type(children[1]) == "string"
+			or (children[1] ~= nil and children[1].emitter ~= nil)
+		)
+				and { label = tostring(children[1]) }
 			or {}
 		returnValue = Widget.Label(utils.merge(labelText, props))
 	elseif name == "button" then

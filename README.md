@@ -14,3 +14,7 @@ Teal ?
 Shrodinger's bugs
 
 useRef => Variable
+
+https://www.svgrepo.com/
+
+mkdir -p /home/shawn/.cache/charon-shell/fetch/
