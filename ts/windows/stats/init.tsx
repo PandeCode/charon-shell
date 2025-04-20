@@ -1,11 +1,11 @@
 import { Elements, useStack } from "../../../tslib/react";
 
-import Sysinfo from "./sysinfo.tsx";
-import Weather from "./weather.tsx";
+import Sysinfo from "./sysinfo";
+import Weather from "./weather";
 
-const { mkPopupToggleAnim } = require("../../../lua/utils/astal.lua");
-const { inspect, notify } = require("../../../lua/utils/init.lua");
-const Console = require("../../../lua/windows/console.lua");
+const { mkPopupToggleAnim } = require("lua.utils.astal");
+const { inspect, notify } = require("lua.utils.init");
+const Console = require("lua.windows.console");
 
 function Stats() {
   const [stack, switcher] = useStack(

@@ -11,6 +11,7 @@ local __TS__StringStartsWith = ____lualib.__TS__StringStartsWith
 local __TS__ArrayFilter = ____lualib.__TS__ArrayFilter
 local ____exports = {}
 local ____react = require("tslib.react")
+local astal = ____react.astal
 local Elements = ____react.Elements
 local useFile = ____react.useFile
 local useCmd = ____react.useCmd
@@ -46,7 +47,16 @@ local function StatItem(____bindingPattern0)
         "div",
         nil,
         Elements.Create("p", {hexpand = true, halign = "START", className = "text-base0A"}, label),
-        Elements.Create("p", {hexpand = true, halign = "END", className = "text-base04"}, value)
+        Elements.Create(
+            "eventbox",
+            {on_button_press_event = function(_obj, _evn)
+                if type(value) == "table" then
+                    local v = value.get(value)
+                    astal.exec_async(((("bash -c 'notify-send \"" .. v) .. "\"; echo \"") .. v) .. "\" | cs'")
+                end
+            end},
+            Elements.Create("p", {hexpand = true, halign = "END", className = "text-base04"}, value)
+        )
     )
 end
 local function CategorySection(____bindingPattern0)
@@ -142,7 +152,7 @@ function ____exports.default()
                     end
                 end
             end
-            if total and available then
+            if total ~= nil and available ~= nil then
                 local totalMB = math.floor(__TS__ParseInt(total) / 1024 + 0.5)
                 local availableMB = math.floor(__TS__ParseInt(available) / 1024 + 0.5)
                 local usedMB = totalMB - availableMB

@@ -2,6 +2,8 @@ local astal = require "astal"
 local Anchor = astal.require("Astal").WindowAnchor
 local Astal = astal.require "Astal"
 
+local assets = require "lua.assets"
+
 local bind = astal.bind
 local Widget = require "astal.gtk3.widget"
 local lookup_icon = Astal.Icon.lookup_icon
@@ -11,7 +13,7 @@ local p = el.p
 local img = el.img
 local btni = el.btni
 local div = el.div
-local divv = el.divv
+local imgbtn = el.imgbtn
 
 local utils = require "lua.utils"
 local utils_a = require "lua.utils.astal"
@@ -66,13 +68,7 @@ local function MediaPlayer(player)
 					halign = "START",
 				}),
 				div({
-					bind(player, "bus_name"):as(function(name)
-						if name == "org.mpris.MediaPlayer2.spotify" then
-							return btni(player_icon, nil, function()
-								(require "ts.windows.playlist").default()
-							end)
-						end
-					end),
+
 					btni(player_icon, nil, function()
 						player:raise()
 					end, { sensitive = bind(player, "can-raise") }),
@@ -164,19 +160,44 @@ local function MediaPlayer(player)
 						)
 					end),
 				},
-				p(
-					bind(player, "length"):as(function(l)
-						return l > 0 and utils.strlen(l) or "0:00"
-					end),
-					nil,
-					{
-						hexpand = true,
-						halign = "END",
-						visible = bind(player, "length"):as(function(l)
-							return l > 0
+				div {
+
+					p(
+						bind(player, "length"):as(function(l)
+							return l > 0 and utils.strlen(l) or "0:00"
 						end),
-					}
-				),
+						nil,
+						{
+							hexpand = true,
+							halign = "END",
+							visible = bind(player, "length"):as(function(l)
+								return l > 0
+							end),
+						}
+					),
+
+					bind(player, "bus_name"):as(function(name)
+						if
+							name == "org.mpris.MediaPlayer2.spotify_player"
+							or name == "org.mpris.MediaPlayer2.spotify"
+						then
+							return div({
+								imgbtn(assets.icons.youtube, 1, 1, function()
+									astal.exec(
+										"xdg-open https://www.youtube.com/results?search_query="
+											.. (
+												utils.sanitize((player.title or "") .. (player.artist or ""))
+												or "Rick%20Roll"
+											)
+									)
+								end),
+								btni(player_icon, nil, function()
+									(require "ts.windows.playlist").default()
+								end),
+							}, nil, { spacing = 5 })
+						end
+					end),
+				},
 			},
 		},
 	}

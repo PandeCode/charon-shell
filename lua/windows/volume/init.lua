@@ -99,7 +99,7 @@ local function mk_revealer(s, audio)
 				return mk_line(e)
 			end)) or p("No " .. s)
 		end),
-		reveal_child = true,
+		reveal_child = false,
 		transition_type = Gtk.RevealerTransitionType.SLIDE_DOWN,
 		transition_duration = 500,
 	}
@@ -117,6 +117,9 @@ local function VolWindow()
 
 	return divv(
 		{
+			btn("pwvucontrol", nil, function()
+				astal.exec_async "pwvucontrol"
+			end),
 			mk_line(speaker),
 			Widget.EventBox {
 				on_button_press_event = function()

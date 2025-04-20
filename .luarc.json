@@ -1,8 +1,15 @@
 {
     "workspace.library": [
-        "/home/shawn/dev/lua/charon-shell",
-        "/home/shawn/dev/lua/charon-shell/lua",
+        "?.lua",
+        "?/init.lua",
         "/home/shawn/dev/lua/lib/astal/lang/lua"
     ],
-    "Lua.runtime.version": "Lua52"
+    "Lua.runtime.version": "Lua52",
+    "Lua.workspace.ignoreDir": [
+        ".direnv"
+    ],
+    "Lua.format.enable": false,
+    "Lua.telemetry.enable": false,
+    "Lua.completion.callSnippet": "Replace",
+    "Lua.workspace.checkThirdParty": false
 }

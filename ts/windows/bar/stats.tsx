@@ -1,17 +1,13 @@
-import { Astal, Gtk, Elements, Variable, toCSS } from "../../../tslib/react";
+import {
+  astal,
+  Astal,
+  Gtk,
+  Elements,
+  Variable,
+  toCSS,
+} from "../../../tslib/react";
 // @ts-ignore
-const { ninspect } = require("../../../lua/utils/init.lua");
-
-function createWatcher(script: string, sleepTime: number = 1) {
-  const variable = Variable("#000000 0");
-  variable.watch(
-    variable,
-    `bash -c 'while true; do ${script}; echo; sleep ${sleepTime}; done'`,
-    (e: string) => e,
-  );
-  return variable;
-}
-
+const { ninspect } = require("lua.utils");
 function color(prefix: string) {
   return (txt: string) => {
     const [c, t] = txt.split(" ");
@@ -22,9 +18,15 @@ function color(prefix: string) {
 }
 
 export default function () {
-  const cpu = createWatcher("usage.sh", 3);
-  const mem = createWatcher("mem.sh", 3);
-  const swap = createWatcher("swap.sh", 3);
+  const cpu = Variable("#000000 0");
+  const mem = Variable("#000000 0");
+  const swap = Variable("#000000 0");
+
+  astal.interval(3000, () => {
+    astal.exec_async("usage.sh", (o: string) => cpu.set(cpu, o));
+    astal.exec_async("mem.sh", (o: string) => mem.set(mem, o));
+    astal.exec_async("swap.sh", (o: string) => swap.set(swap, o));
+  });
 
   const refCpu = Variable(null);
   const refMem = Variable(null);
@@ -68,12 +70,12 @@ export default function () {
     >
       <>
         <revealer
-          reveal_child={true}
+          reveal_child
           transition_type={Gtk.RevealerTransitionType.SLIDE_RIGHT}
           transition_duration={500}
           ref={r1Ref}
         >
-          <div spacing={10} className="px-2 rounded-full bg-base01">
+          <div spacing={10} className="my-1 mx-1 px-1 rounded-full bg-base01">
             {[
               ["\uF4BC", refCpu],
               ["\uEFC5", refMem],
@@ -82,8 +84,8 @@ export default function () {
               return (
                 <overlay>
                   <Astal.CircularProgress
-                    visible={true}
-                    rounded={true}
+                    visible
+                    rounded
                     start-at={0}
                     end-at={1}
                     value={0}
@@ -108,7 +110,7 @@ export default function () {
             [mem, "\uEFC5"],
             [swap, "\uebcb"],
           ].map(([v, icon]) => (
-            <div className="px-3 py-0 rounded-full bg-base01">
+            <div spacing={10} className="my-1 mx-1 px-1 rounded-full bg-base01">
               {v(color(icon))}
             </div>
           ))}

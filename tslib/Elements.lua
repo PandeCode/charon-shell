@@ -37,14 +37,25 @@ local function Create(name, props, ...)
 	local ref = nil
 
 	if type(name) == "function" or type(name) == "table" then
-		if props and props.ref then
+		if props then
+			props.visible = true
+
 			ref = props.ref
 			props.ref = nil
+
 			returnValue = name(props, ...)
-			ref:set(returnValue)
+
+			if ref then
+				if type(ref) == "function" then
+					return ref(returnValue) or returnValue
+				else
+					ref:set(returnValue)
+				end
+			end
+
 			return returnValue
 		end
-		return name(props, ...)
+		return name({ visible = true }, ...)
 	end
 
 	local children = { ... }
@@ -66,7 +77,9 @@ local function Create(name, props, ...)
 				props.class_name = table.concat(props.class_name, " ")
 			end
 		end
+
 		props.visible = true
+
 		if props.ref then
 			ref = props.ref
 			props.ref = nil
@@ -79,8 +92,22 @@ local function Create(name, props, ...)
 		for k, v in pairs(children or {}) do
 			children[k] = labelc(v)
 		end
-		returnValue = name ~= "eventbox" and Widget.Box(utils.merge(children, props))
-			or Astal.EventBox(utils.merge(children, props))
+
+		if name ~= "eventbox" then
+			returnValue = Widget.Box(utils.merge(children, props))
+		else
+			if props.on_clicked ~= nil then
+				local on_clicked = props.on_clicked
+				props.on_clicked = nil
+				props.on_button_press_event = function(_, e)
+					if e.button == 1 then
+						on_clicked()
+					end
+				end
+			end
+
+			returnValue = Astal.EventBox(utils.merge(children, props))
+		end
 	elseif name == "grid" then
 		local grid = Gtk.Grid(utils.merge({}, props))
 		attach_children(grid, children)
@@ -102,7 +129,7 @@ local function Create(name, props, ...)
 			or type(children[1]) == "string"
 			or (children[1] ~= nil and children[1].emitter ~= nil)
 		)
-				and { label = tostring(children[1]) }
+				and { label = type(children[1]) == "number" and tostring(children[1]) or children[1] }
 			or {}
 		returnValue = Widget.Label(utils.merge(labelText, props))
 	elseif name == "button" then
@@ -142,9 +169,14 @@ local function Create(name, props, ...)
 		error("Unknown component: " .. tostring(name))
 	end
 
-	if props and ref then
-		ref:set(returnValue)
+	if ref then
+		if type(ref) == "function" then
+			returnValue = ref(returnValue) or returnValue
+		else
+			ref:set(returnValue)
+		end
 	end
+
 	return returnValue
 end
 

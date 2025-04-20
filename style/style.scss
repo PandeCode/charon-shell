@@ -31,13 +31,18 @@
   transition-timing-function: ease;
 }
 
-slider, viewport, scrollable {
-  all: unset;
+viewport {
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 scale {
   padding: 0;
   margin: .4rem 0;
+  slider {
+    all: unset;
+  }
 
   trough {
     min-height: 8px;
@@ -58,4 +63,52 @@ scale {
 
 .unset {
   all: unset;
+}
+
+
+/* Base styles */
+calendar {
+  background-color: $base00;
+  color: $base05;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+/* Header (month & year) */
+calendar.header {
+  background-color: $base01;
+  color: $base07;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+/* Weekdays (Mon, Tue...) */
+calendar.highlight {
+  color: $base06;
+  background-color: $base02;
+}
+
+/* Days */
+calendar.button {
+  background-color: transparent;
+  color: $base05;
+  border-radius: 4px;
+}
+
+/* Hover & selected day */
+calendar.button:hover {
+  background-color: $base03;
+  color: $base07;
+}
+
+calendar.button:selected,
+calendar.button:selected:hover {
+  background-color: $base0D;
+  color: $base00;
+}
+
+/* Today highlight */
+calendar:indeterminate {
+  background-color: $base0A;
+  color: $base00;
 }

@@ -1,5 +1,5 @@
 vim.cmd [[
-nnoremap <leader>de :!touch /tmp/debug<cr>
+nnoremap <leader>de :!bash -c 'touch /tmp/debug; touch _.lua; rm _.lua'<cr>
 nnoremap <leader>cc :!touch /tmp/clear-log<cr>
 nnoremap <leader>rs :!bash -c "touch _.lua; rm _.lua"<cr>
 nnoremap <leader>wb :normal ys%(<cr>

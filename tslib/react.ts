@@ -10,21 +10,28 @@ export { astal };
 const CACHE_DIR = "/home/shawn/.cache/charon-shell/fetch/"; // TODO move
 
 // @ts-ignore
-const Elements = require("./Elements.lua");
+const Elements = require("tslib.Elements");
 const Gdk = astal.require("Gdk");
 const Gtk = astal.require("Gtk");
+const GdkPixbuf = astal.require("GdkPixbuf");
 const GLib = astal.require("GLib");
 const Astal = astal.require("Astal");
 const Variable = astal.Variable;
 
+const utils = require("lua.utils");
+
 const Widget = require("astal.gtk3.widget");
 
-const toCSS = require("../lua/extras/tailwind/init.lua").toCSS;
+const toCSS = require("lua.extras.tailwind").toCSS;
 
 const setInterval = (c: CallableFunction, t: number) => astal.interval(t, c);
 const setTimeout = (c: CallableFunction, t: number) => astal.timeout(t, c);
 
+const astalify = require("astal.gtk3").astalify;
+
 export {
+  astalify,
+  GdkPixbuf,
   Elements,
   Widget,
   Gdk,
@@ -35,6 +42,7 @@ export {
   setInterval,
   setTimeout,
   toCSS,
+  utils,
 };
 
 const { exec_async, read_file_async } = astal;
@@ -43,7 +51,7 @@ export function sh(cmd: string) {
   return ["bash", "-c", cmd];
 }
 
-export function useState<T>(
+export function useVariable<T>(
   defaultValue: T | undefined = undefined,
   getter: (s: T) => T = (s) => s,
 ): [SVariable<T>, (fn: T | ((prev: T) => T)) => any, Variable<T>] {
@@ -105,7 +113,7 @@ export function useCmd(
   cmd: string | string[],
   preprocess?: (out: string) => string,
 ) {
-  const [state, setState] = useState<string>("Loading...");
+  const [state, setState] = useVariable<string>("Loading...");
   exec_async(cmd, (out?: string) => {
     if (out) {
       if (preprocess) setState(preprocess(out));
@@ -116,7 +124,7 @@ export function useCmd(
 }
 
 export function useFile(path: string, preprocess?: (out: string) => string) {
-  const [state, setState] = useState<string>("Loading...");
+  const [state, setState] = useVariable<string>("Loading...");
   read_file_async(path, (out?: string) => {
     if (out) {
       if (preprocess) setState(preprocess(out));
@@ -130,13 +138,12 @@ export function useFetch<T>(
   url: string,
   preprocess: (out: string) => T = (out: string) => out as T,
 ): SVariable<T> {
-  const [variable, setVariable] = useState<T>();
+  const [variable, setVariable] = useVariable<T>();
   astal.exec_async("curl -s " + url, (out: string) => {
     setVariable(preprocess(out));
   });
   return variable;
 }
-
 function hash(str: string): string {
   return astal.exec(
     string.format(`sh -c "printf '%%s' '%s' | md5sum | cut -d' ' -f1"`, str),
@@ -147,13 +154,14 @@ export function removeCache(url: string) {
   const path = CACHE_DIR + hash(url);
   return os.remove(path);
 }
+
 export function useFetchCache<T>(
   url: string,
   preprocess: (out: string) => T = (out: string) => out as T,
 ) {
   const path = CACHE_DIR + hash(url);
   if (stat(path) != null) {
-    const [variable, setVariable] = useState<T>();
+    const [variable, setVariable] = useVariable<T>();
     astal.read_file_async(path, (out: string) => setVariable(preprocess(out)));
     return variable;
   } else {
@@ -163,4 +171,32 @@ export function useFetchCache<T>(
     };
     return useFetch<T>(url, new_preprocess);
   }
+}
+export function useReFetchCache<T>(
+  variable: SVariable<T>,
+  url: string,
+  preprocess: (out: string) => T = (out: string) => out as T,
+) {
+  const path = CACHE_DIR + hash(url);
+  if (stat(path) != null) {
+    astal.read_file_async(path, (out: string) =>
+      variable._v.set(variable._v, preprocess(out)),
+    );
+  } else {
+    const new_preprocess = (out: string) => {
+      astal.write_file_async(path, out);
+      return preprocess(out);
+    };
+    useReFetch<T>(variable, url, new_preprocess);
+  }
+}
+
+export function useReFetch<T>(
+  variable: SVariable<T>,
+  url: string,
+  preprocess: (out: string) => T = (out: string) => out as T,
+) {
+  astal.exec_async("curl -s " + url, (out: string) => {
+    variable._v.set(variable._v, preprocess(out));
+  });
 }

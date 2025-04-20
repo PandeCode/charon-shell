@@ -1,4 +1,6 @@
-.direnv/
+.direnv
 node_modules
 .gdb_history
 test
+astal
+astal_

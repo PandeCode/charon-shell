@@ -76,4 +76,54 @@ function M.kill(delay)
 	os.execute([[ bash -c "sleep ]] .. delay .. [[ ; kill -9 ]] .. pid .. [[" &]])
 end
 
+local lfs = require "lfs" -- LuaFileSystem, if you have it
+function M.getResourceUse()
+	local result = {}
+
+	-- Read memory and threads
+	local f = io.open("/proc/self/status", "r")
+	if f then
+		for line in f:lines() do
+			local key, value = line:match "^(%S+):%s+(%d+)"
+			if key == "VmRSS" then
+				result.memory_rss_kb = tonumber(value)
+			elseif key == "VmSize" then
+				result.memory_vmsize_kb = tonumber(value)
+			elseif key == "Threads" then
+				result.threads = tonumber(value)
+			end
+		end
+		f:close()
+	end
+
+	-- Read CPU times
+	local f2 = io.open("/proc/self/stat", "r")
+	if f2 then
+		local stat = f2:read "*a"
+		local fields = {}
+		for field in stat:gmatch "%S+" do
+			table.insert(fields, field)
+		end
+		-- fields[14] = utime, fields[15] = stime
+		local utime = tonumber(fields[14] or 0)
+		local stime = tonumber(fields[15] or 0)
+		-- On Linux, clock ticks per second (sysconf) is usually 100
+		local clock_ticks = 100
+		result.cpu_time_seconds = (utime + stime) / clock_ticks
+		f2:close()
+	end
+
+	-- Count open file descriptors
+	if lfs then
+		local count = 0
+		for _ in lfs.dir "/proc/self/fd" do
+			count = count + 1
+		end
+		-- subtract 2 for "." and ".."
+		result.open_fds = count - 2
+	end
+
+	return result
+end
+
 return M

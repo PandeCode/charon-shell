@@ -21,23 +21,30 @@
         "jsx": "react",
         "jsxFactory": "Elements.Create",
         "jsxFragmentFactory": "Elements.Fragment",
-        "allowImportingTsExtensions": true,
-        "noUnusedLocals": true,
+        "noUnusedLocals": false,
         "noUnusedParameters": true,
-        "noImplicitReturns ": true
+        "noImplicitReturns": true
     },
     "tstl": {
+        "luaPlugins": [
+          { "name": "./json-plugin.js" }
+        ],
         "noResolvePaths": [
             "astal",
+            "astal.*",
             "posix",
             "dkjson",
-            "astal.gtk3.widget"
+            "astal.gtk3.widget",
+            "lua.*",
+            "ts.windows.playlist",
+            "tslib.Elements"
         ],
         "luaTarget": "5.2",
         "noImplicitGlobalVariables": true,
         "noImplicitSelf": true
     },
     "include": [
+        "tslib/**/*.ts",
         "ts/**/*.ts",
         "ts/**/*.tsx"
     ]

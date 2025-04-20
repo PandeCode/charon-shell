@@ -5,6 +5,8 @@ local GLib = astal.require "GLib"
 local Widget = require "astal.gtk3.widget"
 local utils = require "lua.utils"
 
+local assets = require "lua.assets"
+
 local M = {}
 local timing = 100
 
@@ -17,6 +19,7 @@ function M.mkPopupToggleAnim(WindowChild, props, props_r)
 	local function toggle()
 		if window_visible:get() and window and r_main then
 			r_main.reveal_child = false
+			astal.exec_async("aplay " .. assets.audio.windows_startup)
 			GLib.timeout_add(GLib.PRIORITY_DEFAULT, timing, function()
 				window:hide()
 				window_visible:set(false)
@@ -53,6 +56,7 @@ function M.mkPopupToggleAnim(WindowChild, props, props_r)
 			window:show_all()
 			window_visible:set(true)
 			timeout = 10000
+			astal.exec_async("aplay " .. assets.audio.ding)
 			GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, function()
 				r_main.reveal_child = true
 				return false
@@ -126,6 +130,36 @@ end
 function M.formatDate(ts)
 	local date = GLib.DateTime.new_from_unix_local(ts)
 	return date:format "%x" -- Locale-specific date
+end
+
+local GdkPixbuf = require("lgi").GdkPixbuf
+
+-- Assume `r` is your astal.icon instance
+-- `icon` is the name or path, and `r.pixbuf` needs to be updated
+
+function M.update_icon_pixbuf(r, icon_name, width, height)
+	local pixbuf
+
+	-- Try icon theme first
+	local icon_theme = Gtk.IconTheme.get_default()
+	local info = icon_theme:lookup_icon(icon_name, math.max(width, height), 0)
+
+	if info then
+		local raw = info:load_icon()
+		pixbuf = raw:scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
+	else
+		-- Fallback to file
+		local ok, scaled = pcall(GdkPixbuf.Pixbuf.new_from_file_at_scale, icon_name, width, height, true)
+		if ok then
+			pixbuf = scaled
+		else
+			print("Failed to load icon:", icon_name)
+		end
+	end
+
+	if pixbuf then
+		r.pixbuf = pixbuf
+	end
 end
 
 return M

@@ -5,25 +5,14 @@ local __TS__ArrayForEach = ____lualib.__TS__ArrayForEach
 local __TS__ArrayMap = ____lualib.__TS__ArrayMap
 local ____exports = {}
 local ____react = require("tslib.react")
+local astal = ____react.astal
 local Astal = ____react.Astal
 local Gtk = ____react.Gtk
 local Elements = ____react.Elements
 local Variable = ____react.Variable
 local toCSS = ____react.toCSS
-local ____require_result_0 = require("lua.utils.init")
+local ____require_result_0 = require("lua.utils")
 local ninspect = ____require_result_0.ninspect
-local function createWatcher(script, sleepTime)
-    if sleepTime == nil then
-        sleepTime = 1
-    end
-    local variable = Variable("#000000 0")
-    variable.watch(
-        variable,
-        ((("bash -c 'while true; do " .. script) .. "; echo; sleep ") .. tostring(sleepTime)) .. "; done'",
-        function(e) return e end
-    )
-    return variable
-end
 local function color(prefix)
     return function(txt)
         local c, t = table.unpack(__TS__StringSplit(txt, " "))
@@ -35,9 +24,26 @@ local function color(prefix)
     end
 end
 function ____exports.default()
-    local cpu = createWatcher("usage.sh", 3)
-    local mem = createWatcher("mem.sh", 3)
-    local swap = createWatcher("swap.sh", 3)
+    local cpu = Variable("#000000 0")
+    local mem = Variable("#000000 0")
+    local swap = Variable("#000000 0")
+    astal.interval(
+        3000,
+        function()
+            astal.exec_async(
+                "usage.sh",
+                function(o) return cpu.set(cpu, o) end
+            )
+            astal.exec_async(
+                "mem.sh",
+                function(o) return mem.set(mem, o) end
+            )
+            astal.exec_async(
+                "swap.sh",
+                function(o) return swap.set(swap, o) end
+            )
+        end
+    )
     local refCpu = Variable(nil)
     local refMem = Variable(nil)
     local refSwap = Variable(nil)
@@ -90,7 +96,7 @@ function ____exports.default()
                 {reveal_child = true, transition_type = Gtk.RevealerTransitionType.SLIDE_RIGHT, transition_duration = 500, ref = r1Ref},
                 Elements.Create(
                     "div",
-                    {spacing = 10, className = "px-2 rounded-full bg-base01"},
+                    {spacing = 10, className = "my-1 mx-1 px-1 rounded-full bg-base01"},
                     __TS__ArrayMap(
                         {{"", refCpu}, {"", refMem}, {"", refSwap}},
                         function(____, ____bindingPattern0)
@@ -132,7 +138,7 @@ function ____exports.default()
                         icon = ____bindingPattern0[2]
                         return Elements.Create(
                             "div",
-                            {className = "px-3 py-0 rounded-full bg-base01"},
+                            {spacing = 10, className = "my-1 mx-1 px-1 rounded-full bg-base01"},
                             v(color(icon))
                         )
                     end

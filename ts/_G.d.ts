@@ -1,10 +1,19 @@
 // --- Common Types ---
+// import type { Binding } from "../../lib/astal/lang/gjs/src/binding.ts";
+// import type { Variable } from "../../lib/astal/lang/gjs/src/variable.ts";
+
 declare type Binding<_> = {};
-declare type Variable<_> = {};
+declare type Variable<_> = {
+  set: CallableFunction;
+  get: CallableFunction;
+  poll: CallableFunction;
+  watch: CallableFunction;
+} & CallableFunction;
 declare type SVariable<T> = Binding<Variable<T>> & {
-  _v: Variable<T> & CallableFunction;
+  _v: Variable<T>;
 };
 
+type Policy = "ALWAYS" | "AUTOMATIC" | "NEVER" | "EXTERNAL";
 type TransitionType =
   | "NONE"
   | "CROSSFADE"
@@ -46,6 +55,7 @@ type Align =
 
 // --- Base Widget Props ---
 interface Widget {
+  on_draw?: CallableFunction;
   on_destroy?: CallableFunction;
   onDestroy?: CallableFunction;
   key?: any;
@@ -61,7 +71,7 @@ interface Widget {
   height?: number;
   visible?: boolean;
 
-  ref?: Variable<Widget>;
+  ref?: Variable<Widget> | ((ref: Widget) => Widget | null);
 }
 
 // --- Layout Props ---
@@ -114,7 +124,7 @@ declare namespace JSX {
       "row-spacing"?: number;
     };
     griditem: Div & { x: number; y: number; w: number; h: number };
-    p: Div;
+    p: Div & { xalign?: number; justify?: string; wrap?: boolean };
     span: Widget & { vertical?: boolean };
 
     button: Button;
@@ -123,8 +133,9 @@ declare namespace JSX {
     circularprogress: ValueWidget;
     drawingarea: Widget;
     entry: InputWidget;
-    eventbox: Widget & { on_button_press_event?: CallableFunction };
-    icon: Widget & { name?: string; size?: number };
+    eventbox: (Widget & { on_button_press_event?: CallableFunction }) &
+      Clickable;
+    icon: Widget & { name?: string; size?: number; icon?: string };
     label: TextWidget;
     levelbar: ValueWidget;
     overlay: Widget;
@@ -133,7 +144,10 @@ declare namespace JSX {
       transition_type?: RevealerTransitionType;
       transition_duration?: number;
     };
-    scrollable: Widget;
+    scrollable: Widget & {
+      hscroll?: Policy;
+      vscroll?: Policy;
+    };
     slider: ValueWidget & {
       on_value_changed?: (value: number) => void;
     };
@@ -145,3 +159,5 @@ declare namespace JSX {
     hr: Widget;
   }
 }
+
+declare function require(_: string): any;

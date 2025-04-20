@@ -1,12 +1,4 @@
-import {
-  astal,
-  Gtk,
-  Elements,
-  useState,
-  useEffect,
-  useFile,
-  useCmd,
-} from "../../../tslib/react";
+import { astal, Elements, useFile, useCmd } from "../../../tslib/react";
 
 // Helper to format bytes to a human-readable format
 function formatBytes(bytes: string, decimals = 2) {
@@ -24,32 +16,48 @@ function formatBytes(bytes: string, decimals = 2) {
 }
 
 // Helper to render a single stat item
-function StatItem({ label, value }: { label: string; value: string }) {
+function StatItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: any | string | object;
+}) {
   return (
     <div>
       <p hexpand halign="START" className="text-base0A">
         {label}
       </p>
-      <p hexpand halign="END" className="text-base04">
-        {value}
-      </p>
+      <eventbox
+        on_button_press_event={(_obj: any, _evn: any) => {
+          if (typeof value == "object") {
+            let v: string = value.get(value);
+            astal.exec_async(
+              `bash -c 'notify-send "` + v + `"; echo "` + v + `" | cs'`,
+            );
+          }
+        }}
+      >
+        <p hexpand halign="END" className="text-base04">
+          {value}
+        </p>
+      </eventbox>
     </div>
   );
 }
 
-// Helper to render a category of stats
 function CategorySection({
   title,
   stats,
 }: {
   title: string;
-  stats: [string, typeof astal.Variable][];
+  stats: [string, typeof astal.Variable][] | any[];
 }) {
   return (
     <div vertical className="mb-2">
       <p className="text-base0D font-bold mb-1">{title}</p>
       <div vertical className="ml-2">
-        {stats.map(([k, v]) => (
+        {stats.map(([k, v]: [any, any]) => (
           <StatItem label={k} value={v} />
         ))}
       </div>
@@ -100,7 +108,7 @@ export default function () {
       }
     }
 
-    if (total && available) {
+    if (total != null && available != null) {
       const totalMB = Math.round(parseInt(total) / 1024);
       const availableMB = Math.round(parseInt(available) / 1024);
       const usedMB = totalMB - availableMB;

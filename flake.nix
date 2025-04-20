@@ -45,6 +45,8 @@
         pkg-config
         inotify-tools
         typescript-language-server
+
+        libcanberra-gtk3
       ])
       ++ (
         with pkgs.luaPackages; [
@@ -55,17 +57,14 @@
           jsregexp
 
           argparse
-          luv
           dkjson
           luafilesystem
           luasec
           luasocket
           luaposix
 
-          serpent
 
           luarocks-nix
-
           # (import ./nix/lanes.nix pkgs)
           # (import ./nix/lume.nix pkgs)
         ]

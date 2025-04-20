@@ -563,4 +563,59 @@ function M.notify(msg)
 	os.execute("notify-send '" .. msg:gsub("'", "'\\''") .. "'")
 end
 
+function M.lastIndexOf(haystack, needle)
+	local found = haystack:reverse():find(needle:reverse(), nil, true)
+	if found then
+		return haystack:len() - needle:len() - found + 2
+	else
+		return found
+	end
+end
+
+function M.isDark(hex)
+	-- Remove the # if present
+	hex = hex:gsub("#", "")
+
+	-- Convert hex to RGB
+	local r = tonumber(hex:sub(1, 2), 16)
+	local g = tonumber(hex:sub(3, 4), 16)
+	local b = tonumber(hex:sub(5, 6), 16)
+
+	-- Calculate perceived brightness (ITU-R BT.709)
+	local brightness = (0.2126 * r + 0.7152 * g + 0.0722 * b)
+
+	-- Return true if dark, false if light
+	return brightness < 128
+end
+
+function M.sanitize(input)
+	local handle = io.popen("echo " .. input .. " | jq -sRr @uri")
+	if handle then
+		local result = handle:read "*a"
+		handle:close()
+		return result
+	end
+end
+
+function M.mk_threshold_func(thresholds, fallback)
+	table.sort(thresholds, function(a, b)
+		return a[1] > b[1]
+	end)
+
+	return function(value)
+		for _, threshold in ipairs(thresholds) do
+			if value >= threshold[1] then
+				return threshold[2]
+			end
+		end
+		return fallback
+	end
+end
+
+function M.seconds_to_mmss(seconds)
+	local mins = math.floor(seconds / 60)
+	local secs = seconds % 60
+	return string.format("%02d:%02d", mins, secs)
+end
+
 return M

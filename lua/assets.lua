@@ -1,8 +1,35 @@
 local json = require "dkjson" -- dkjson for JSON parsing
 local config_path = os.getenv "HOME" .. "/.config/charon-shell/config.json"
 
+local audio_path = os.getenv "HOME" .. "/dev/lua/Media/"
 return {
-	default_image_path = "/home/shawn/dev/lua/charon-shell/media/nix.svg",
+	default_image_path = os.getenv "HOME" .. "/dev/lua/charon-shell/media/nix.svg",
+
+	audio = {
+		alarm_01 = audio_path .. "Alarm01.wav",
+		alarm_02 = audio_path .. "Alarm02.wav",
+		alarm_03 = audio_path .. "Alarm03.wav",
+		chimes = audio_path .. "chimes.wav",
+		chord = audio_path .. "chord.wav",
+		ding = audio_path .. "ding.wav",
+		notify = audio_path .. "notify.wav",
+		recycle = audio_path .. "recycle.wav",
+		ringout = audio_path .. "ringout.wav",
+		tada = audio_path .. "tada.wav",
+		windows_logon = audio_path .. "Windows Logon.wav",
+		windows_notify = audio_path .. "Windows Notify.wav",
+		windows_ding = audio_path .. "Windows Ding.wav",
+		windows_error = audio_path .. "Windows Error.wav",
+		windows_exclamation = audio_path .. "Windows Exclamation.wav",
+		windows_shutdown = audio_path .. "Windows Shutdown.wav",
+		windows_startup = audio_path .. "Windows Startup.wav",
+	},
+
+	icons = {
+		youtube = os.getenv "HOME" .. "/dev/lua/charon-shell/media/youtube.svg",
+        disconnect = os.getenv "HOME" .. "/dev/lua/charon-shell/media/disconnect.svg",
+        connect = os.getenv "HOME" .. "/dev/lua/charon-shell/media/connect.svg",
+	},
 
 	colors = (function()
 		local s, colors = pcall(require, os.getenv "HOME" .. "/.config/stylix/nvim.lua")

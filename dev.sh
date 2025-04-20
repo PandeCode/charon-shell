@@ -57,7 +57,18 @@ inotifywait -m -r -e close_write,create,delete --format '%w%f' "$WATCH_DIR" | wh
 
         killall -9 lua
         if [ -f /tmp/debug ]; then
-            GOBJECT_DEBUG=instance-count GTK_DEBUG=interactive lua init.lua &
+            # G_DEBUG=fatal-criticals	Makes critical warnings crash the program immediately. Good for catching issues fast.
+            # G_SLICE=debug-blocks	Disables GLib's memory optimizations to make Valgrind/memory debugging way easier.
+            # GTK_DEBUG=updates	Visualizes all redraws and repaints. Good for hunting rendering bugs.
+            # GTK_DEBUG=layout	Dumps layout allocations and widget sizes to the console. Great for UI sizing issues.
+            # GTK_INSPECTOR_DISPLAY=all	Shows everything in GTK Inspector, even stuff normally hidden.
+            # GOBJECT_DEBUG=signal-handlers	Logs when signal handlers are connected/disconnected. Useful for checking signal leaks.
+            # GDK_DEBUG=events	Prints every low-level input event (key presses, mouse moves, etc.).
+            # GDK_DEBUG=rendering	Prints when GDK draws stuff to the screen (compositing, frame drawing).
+            # GDK_BACKEND=x11/wayland	Forces a specific backend if you want to debug platform-specific bugs.
+            # G_MESSAGES_DEBUG=all
+
+            GOBJECT_DEBUG=instance-count G_DEBUG=fatal-criticals G_SLICE=debug-blocks GTK_DEBUG=interactive lua init.lua &
             rm /tmp/debug
         else
             lua init.lua &

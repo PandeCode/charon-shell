@@ -3,7 +3,9 @@ local Widget = require "astal.gtk3.widget"
 local Variable = astal.Variable
 local GLib = astal.require "GLib"
 local Gtk = require("astal.gtk3").Gtk
+local astalify = require("astal.gtk3").astalify
 local bind = astal.bind
+local Astal = astal.require "Astal"
 local Battery = astal.require "AstalBattery"
 local Network = astal.require "AstalNetwork"
 local Tray = astal.require "AstalTray"
@@ -36,14 +38,26 @@ local react = require "tslib.react"
 -- require("ts.windows.stats").default()
 
 local function Logo()
-	local btn = Widget.Button {
-		-- on_clicked = require "lua.windows.console",
-		on_clicked = function()
-			require("ts.windows.stats").default()
-		end,
-		class_name = "transparent",
-		img("./media/nix.svg", 1, 1),
-	}
+	local btn = div(
+		Widget.EventBox {
+			on_button_press_event = function(obj, evn)
+				if evn.button == 1 then
+					require("ts.windows.start").default()
+				elseif evn.button == 2 then
+					astal.exec_async "swaync-client -t -sw"
+				elseif evn.button == 3 then
+					require("ts.windows.stats").default()
+				end
+			end,
+			class_name = "transparent",
+			img("./media/nix.svg", 1, 1),
+		},
+		"p-2",
+		{
+			halign = "CENTER",
+			valign = "CENTER",
+		}
+	)
 	local fixed = Gtk.Fixed {
 		visible = true,
 	}
@@ -53,9 +67,7 @@ local function Logo()
 	local time = 0
 
 	local nixRunning = astal.Variable(false):poll(5000, "bash -c 'pidof nix; echo $?'", function(out)
-		if out == "1" then
-			return false
-		else
+		if out ~= "1" then
 			return true
 		end
 	end)
@@ -64,11 +76,11 @@ local function Logo()
 		if nixRunning:get() then
 			time = time + 0.042
 			angle = angle + 2 -- Spin
-			local x = math.sin(time * 10) * 10 -- Shake (left-right)
-			-- local y =  math.sin(time * 2) * 10 -- Bob (up-down)
+			local x = math.sin(time * 10) * 10
 			fixed:move(btn, x, 0)
 		else
 			fixed:move(btn, 0, 0)
+			return false
 		end
 		return true
 	end)
@@ -107,7 +119,7 @@ local function SysTray()
 		transition_duration = 500,
 	}
 
-	local show, setShow = table.unpack(react.useState(false, function(v)
+	local show, setShow = table.unpack(react.useVariable(false, function(v)
 		return v and "go-next-symbolic" or "go-previous-symbolic"
 	end))
 
@@ -124,37 +136,90 @@ local function Wifi()
 	local network = Network.get_default()
 	local wifi = bind(network, "wifi")
 
+	local ping = Variable("#000000 NaN 0"):poll(5000, "ping.sh")
+
 	return Widget.Button {
+		on_destroy = function()
+			ping:drop()
+		end,
 		class_name = "transparent",
 		visible = wifi:as(function(v)
 			return v ~= nil
 		end),
-		on_clicked = function()
-			require "lua.windows.network"()
+		on_clicked = function(_, e)
+			require("ts.windows.network").default()
 		end,
-		wifi:as(function(w)
-			return Widget.Icon {
-				tooltip_text = bind(w, "ssid"):as(tostring),
-				class_name = "Wifi",
-				icon = bind(w, "icon-name"),
-			}
-		end),
+		div({
+
+			wifi:as(function(w)
+				return Widget.Icon {
+					tooltip_text = bind(w, "ssid"):as(tostring),
+					class_name = "Wifi",
+					icon = bind(w, "icon-name"),
+				}
+			end),
+			ping(function(out)
+				local color, icon, num = table.unpack(utils.split(out, " "))
+				return p(num, nil, { css = "color: " .. color .. "" })
+			end),
+		}, nil, { spacing = 10 }),
 	}
 end
+
+local battery_to_text = utils.mk_threshold_func({
+	{ 0.8, "text-base0B" },
+	{ 0.5, "text-base0A" },
+	{ 0.2, "text-base0C" },
+}, "text-base0F")
 
 local function BatteryLevel()
 	local bat = Battery.get_default()
 
 	return Widget.Box {
-		class_name = "Battery",
 		visible = bind(bat, "is-present"),
-		Widget.Icon {
-			icon = bind(bat, "battery-icon-name"),
-		},
-		Widget.Label {
-			label = bind(bat, "percentage"):as(function(p)
-				return tostring(math.floor(p * 100))
+		tooltip_text = bind(bat, "percentage"):as(function(percentage)
+			local info = {
+				"Percentage: " .. string.format("%.1f%%", percentage * 100),
+				"State: " .. bat:get_state(),
+				"Time to Empty: " .. (function()
+					local secs = bat:get_time_to_empty()
+					if secs > 0 then
+						local hrs = math.floor(secs / 3600)
+						local mins = math.floor((secs % 3600) / 60)
+						return string.format("%dh %dm", hrs, mins)
+					else
+						return "N/A"
+					end
+				end)(),
+				"Time to Full: " .. (function()
+					local secs = bat:get_time_to_full()
+					if secs > 0 then
+						local hrs = math.floor(secs / 3600)
+						local mins = math.floor((secs % 3600) / 60)
+						return string.format("%dh %dm", hrs, mins)
+					else
+						return "N/A"
+					end
+				end)(),
+				"Energy Now: " .. string.format("%.2fWh", bat:get_energy()),
+				"Energy Full: " .. string.format("%.2fWh", bat:get_energy_full()),
+			}
+			return table.concat(info, "\n")
+		end),
+		Widget.Overlay {
+			bind(bat, "percentage"):as(function(per)
+				return Astal.CircularProgress {
+					value = per,
+					visible = true,
+					rounded = true,
+					class_name = "m-2 " .. battery_to_text(per),
+					css = "font-size: 3px;",
+					width = 34,
+				}
 			end),
+			Widget.Icon {
+				icon = bind(bat, "battery-icon-name"),
+			},
 		},
 	}
 end
@@ -180,9 +245,13 @@ local function Time()
 	end)
 
 	return Widget.EventBox {
-		on_button_press_event = function()
-			format = format % #formats + 1
-			time:set(GLib.DateTime.new_now_local():format(formats[format]))
+		on_button_press_event = function(obj, evn)
+			if evn.button == 3 then
+				(require "ts.windows.time").default()
+			else
+				format = format % #formats + 1
+				time:set(GLib.DateTime.new_now_local():format(formats[format]))
+			end
 		end,
 		Widget.Label {
 			on_destroy = function()
@@ -204,7 +273,7 @@ local function WindowName()
 		transition_duration = 500,
 	}
 
-	local show, setShow = table.unpack(react.useState(false, function(v)
+	local show, setShow = table.unpack(react.useVariable(false, function(v)
 		return v and "go-previous-symbolic" or "go-next-symbolic"
 	end))
 
@@ -255,24 +324,24 @@ return function(gdkmonitor)
 		anchor = Anchor.TOP + Anchor.LEFT + Anchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
 		Widget.CenterBox {
-			class_name = "m-1 mr-0 rounded-lg transparent",
+			class_name = "mx-2 py-2 rounded-lg transparent",
 			Widget.Box {
 				halign = "START",
 				Logo(),
 				Niri.Workspaces(),
 				WindowName(),
-				class_name = "m-1 pr-2 rounded-lg bg-base00-90",
+				class_name = "py-1 rounded-lg bg-base00-90",
 			},
 			center,
 			Widget.Box {
-				class_name = "m-1 mr-0 rounded-lg bg-base00-90",
+				class_name = "rounded-lg bg-base00-90",
 				halign = "END",
 				css = "padding-right: 15px",
 				SysTray(),
 				Wifi(),
 				Volume(),
 				BatteryLevel(),
-				require("ts.windows.bar.stats").default(),
+				-- require("ts.windows.bar.stats").default(),
 				Time(),
 				btni("open-menu-symbolic", "transparent", function()
 					require("ts.windows.center").default()

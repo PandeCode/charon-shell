@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 local argparse = require "argparse"
-
+arg = arg or {}
 local astal = require "astal"
 local App = require "astal.gtk3.app"
 
