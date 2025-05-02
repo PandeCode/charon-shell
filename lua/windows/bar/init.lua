@@ -1,3 +1,6 @@
+local logger = require "lua.logger"
+logger.global.debug "Creating Bar Require"
+
 local astal = require "astal"
 local Widget = require "astal.gtk3.widget"
 local Variable = astal.Variable
@@ -10,12 +13,11 @@ local Battery = astal.require "AstalBattery"
 local Network = astal.require "AstalNetwork"
 local Tray = astal.require "AstalTray"
 
-local Niri = require "lua.extras.niri"
+local Hyprland = require "lua.extras.hyprland"
 local utf8 = require "lua-utf8"
 
 local Media = require "lua.windows.bar.media"
 local Volume = require "lua.windows.bar.volume"
-local Cava = require "lua.windows.bar.cava"
 
 local toCSS = require("lua.extras.tailwind").toCSS
 
@@ -58,37 +60,59 @@ local function Logo()
 			valign = "CENTER",
 		}
 	)
-	local fixed = Gtk.Fixed {
+
+	local progress = Astal.CircularProgress {
+		value = 0,
 		visible = true,
+		rounded = true,
+		class_name = "m-2 text-base0B",
+		css = "font-size: 3px;",
+		width = 34,
 	}
-	fixed:add(btn)
 
-	local angle = 0
+	local overlay = Widget.Overlay {
+		progress,
+		btn,
+	}
 	local time = 0
+	local running = false
 
-	local nixRunning = astal.Variable(false):poll(5000, "bash -c 'pidof nix; echo $?'", function(out)
-		if out ~= "1" then
-			return true
-		end
+	astal.interval(5000, function()
+		astal.exec_async("bash -c 'pidof nix; echo $?'", function(out)
+			if out ~= "1" then
+				if running then
+					return
+				end
+				running = true
+				GLib.timeout_add(GLib.PRIORITY_DEFAULT, 42, function()
+					if running then
+						if time > 1 then
+							time = 0
+						end
+						time = time + 0.042
+
+						local start_angle = time
+						local end_angle = start_angle + 1
+
+						progress:set_value(math.sin(time * 10))
+						progress:set_start_at(start_angle)
+						progress:set_end_at(end_angle)
+						return true
+					else
+						if time ~= 0 then
+							time = 0
+							progress.class_name = "m-2"
+						end
+						running = false
+						return false
+					end
+				end)
+			end
+			running = false
+		end)
 	end)
 
-	astal.interval(42, function()
-		if nixRunning:get() then
-			time = time + 0.042
-			angle = angle + 2 -- Spin
-			local x = math.sin(time * 10) * 10
-			fixed:move(btn, x, 0)
-		else
-			fixed:move(btn, 0, 0)
-			return false
-		end
-		return true
-	end)
-
-	return fixed
-end
-local function Calender()
-	return elements.btni("x-office-calendar-symbolic", nil, require "lua.windows.calender")
+	return overlay
 end
 
 local function SysTray()
@@ -166,61 +190,68 @@ local function Wifi()
 	}
 end
 
-local battery_to_text = utils.mk_threshold_func({
-	{ 0.8, "text-base0B" },
-	{ 0.5, "text-base0A" },
-	{ 0.2, "text-base0C" },
-}, "text-base0F")
-
 local function BatteryLevel()
 	local bat = Battery.get_default()
 
-	return Widget.Box {
-		visible = bind(bat, "is-present"),
-		tooltip_text = bind(bat, "percentage"):as(function(percentage)
-			local info = {
-				"Percentage: " .. string.format("%.1f%%", percentage * 100),
-				"State: " .. bat:get_state(),
-				"Time to Empty: " .. (function()
-					local secs = bat:get_time_to_empty()
-					if secs > 0 then
-						local hrs = math.floor(secs / 3600)
-						local mins = math.floor((secs % 3600) / 60)
-						return string.format("%dh %dm", hrs, mins)
-					else
-						return "N/A"
-					end
-				end)(),
-				"Time to Full: " .. (function()
-					local secs = bat:get_time_to_full()
-					if secs > 0 then
-						local hrs = math.floor(secs / 3600)
-						local mins = math.floor((secs % 3600) / 60)
-						return string.format("%dh %dm", hrs, mins)
-					else
-						return "N/A"
-					end
-				end)(),
-				"Energy Now: " .. string.format("%.2fWh", bat:get_energy()),
-				"Energy Full: " .. string.format("%.2fWh", bat:get_energy_full()),
-			}
-			return table.concat(info, "\n")
-		end),
-		Widget.Overlay {
-			bind(bat, "percentage"):as(function(per)
-				return Astal.CircularProgress {
-					value = per,
-					visible = true,
-					rounded = true,
-					class_name = "m-2 " .. battery_to_text(per),
-					css = "font-size: 3px;",
-					width = 34,
+	local battery_to_text = utils.mk_threshold_func({
+		{ 0.8, "text-base0B" },
+		{ 0.5, "text-base0A" },
+		{ 0.2, "text-base0C" },
+	}, "text-base0F")
+
+	return Widget.EventBox {
+		Widget.Box {
+			visible = bind(bat, "is-present"),
+			tooltip_text = bind(bat, "percentage"):as(function(percentage)
+				local info = {
+					"Percentage: " .. string.format("%.1f%%", percentage * 100),
+					"State: " .. bat:get_state(),
+					"Time to Empty: " .. (function()
+						local secs = bat:get_time_to_empty()
+						if secs > 0 then
+							local hrs = math.floor(secs / 3600)
+							local mins = math.floor((secs % 3600) / 60)
+							return string.format("%dh %dm", hrs, mins)
+						else
+							return "N/A"
+						end
+					end)(),
+					"Time to Full: " .. (function()
+						local secs = bat:get_time_to_full()
+						if secs > 0 then
+							local hrs = math.floor(secs / 3600)
+							local mins = math.floor((secs % 3600) / 60)
+							return string.format("%dh %dm", hrs, mins)
+						else
+							return "N/A"
+						end
+					end)(),
+					"Energy Now: " .. string.format("%.2fWh", bat:get_energy()),
+					"Energy Full: " .. string.format("%.2fWh", bat:get_energy_full()),
 				}
+				return table.concat(info, "\n")
 			end),
-			Widget.Icon {
-				icon = bind(bat, "battery-icon-name"),
+			Widget.Overlay {
+				bind(bat, "percentage"):as(function(per)
+					return Astal.CircularProgress {
+						value = per,
+						visible = true,
+						rounded = true,
+						class_name = "m-2 " .. battery_to_text(per),
+						css = "font-size: 3px;",
+						width = 34,
+					}
+				end),
+				Widget.Icon {
+					icon = bind(bat, "battery-icon-name"),
+				},
 			},
 		},
+		on_button_press_event = function(_, e)
+			if e.button == 1 then
+				require("ts.windows.power").default()
+			end
+		end,
 	}
 end
 
@@ -264,8 +295,29 @@ local function Time()
 	}
 end
 
+local function Workspaces()
+	if utils.getWM() == "niri" then
+		return (require "lua.extras.niri").Workspaces()
+	elseif utils.getWM() == "Hyprland" then
+		return Hyprland.Workspaces()
+	else
+		return p "Workspaces (no wm)"
+	end
+end
+
 local function WindowName()
-	local child = Niri.FocusedClient()
+	local child = nil
+	local niri = false
+
+	if utils.getWM() == "niri" then
+		child = (require "lua.extras.niri").FocusedClient()
+		niri = true
+	elseif utils.getWM() == "Hyprland" then
+		child = Hyprland.FocusedClient()
+	else
+		return p "Window Name (no wm)"
+	end
+
 	local r = Widget.Revealer {
 		child = child,
 		reveal_child = false,
@@ -282,42 +334,24 @@ local function WindowName()
 		btni(show, "transparent", function()
 			r.reveal_child = not r.reveal_child
 			setShow(r.reveal_child)
-			if r.reveal_child then
-				Niri.var_focused_window:start_poll()
-			else
-				Niri.var_focused_window:stop_poll()
+			if niri then
+				if r.reveal_child then
+					(require "lua.extras.niri").var_focused_window:start_poll()
+				else
+					(require "lua.extras.niri").var_focused_window:stop_poll()
+				end
 			end
 		end, nil, { pixel_size = 1 }),
 	}
 end
 
 return function(gdkmonitor)
-	local Anchor = astal.require("Astal").WindowAnchor
-
-	local c = Cava {
-		effect_type = "bars", -- Options: "bars", "wave", "particles", "circular"
-		color = { 0.2, 0.6, 0.86, 0.8 }, -- Main color (R,G,B,A)
-		wave_color = { 0.3, 0.8, 0.4, 0.8 }, -- Wave effect color
-		particle_color = { 0.9, 0.3, 0.2, 0.7 }, -- Particle effect color
-		mirror = false, -- Enable mirror effect (for bars and wave)
-		bars = 32, -- Number of bars/sample points
-	}
-
-	local m = Widget.Box { Media(), css = "min-width: 200px;" }
-	local center = Widget.EventBox {
-		Widget.Overlay {
-			m,
-			c,
-		},
-		on_button_press_event = require "lua.windows.player",
-	}
-
-	-- css = "all: unset;",
-	-- }
-
 	-- local main_box = nil and utils_astal.loadGlade "glade/sample.glade"
 	-- main_box,
 
+	local Anchor = astal.require("Astal").WindowAnchor
+
+	logger.global.debug "Bar Created"
 	return Widget.Window {
 		class_name = "transparent",
 		gdkmonitor = gdkmonitor,
@@ -328,11 +362,11 @@ return function(gdkmonitor)
 			Widget.Box {
 				halign = "START",
 				Logo(),
-				Niri.Workspaces(),
+				Workspaces(),
 				WindowName(),
 				class_name = "py-1 rounded-lg bg-base00-90",
 			},
-			center,
+			Media(),
 			Widget.Box {
 				class_name = "rounded-lg bg-base00-90",
 				halign = "END",

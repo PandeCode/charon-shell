@@ -46,6 +46,23 @@ os.execute("sass -q --no-source-map " .. scss .. " " .. css)
 
 logger.global.debug "App starting"
 
+astal.interval(3600, function()
+	local f = io.open("/proc/self/status", "r")
+	if f then
+		for line in f:lines() do
+			local key, value = line:match "^(%S+):%s+(%d+)"
+			if key == "VmRSS" then
+				local memory_rss_kb = tonumber(value)
+				if memory_rss_kb >= 300000 then
+					require("lua.utils.ps").restart()
+				end
+				break
+			end
+		end
+		f:close()
+	end
+end)
+
 App:start {
 	instance_name = "main",
 	css = css,
@@ -55,7 +72,9 @@ App:start {
 	end,
 	main = function()
 		for _, mon in pairs(App.monitors) do
+			logger.global.debug("Creating Bar " .. tostring(_))
 			windows.Bar(mon)
+			logger.global.debug("Created Bar " .. tostring(_))
 		end
 	end,
 }

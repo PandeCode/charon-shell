@@ -15,6 +15,8 @@ local p = el.p
 local div = el.div
 local math = require "math"
 
+local assets = require "lua.assets"
+
 return function(params)
 	params = params or {}
 	local effect_type = params.effect_type or "bars"
@@ -24,8 +26,10 @@ return function(params)
 	local mirror = params.mirror or false
 
 	local cava = Cava.get_default()
-	cava.bars = params.bars or 32
-	cava.framerate = params.framerate or 60
+
+	cava.bars = tonumber(assets.config.cava_bars or 32)
+	cava.framerate = tonumber(assets.config.cava_framerate or 60)
+	cava.stereo = type(assets.config.cava_stereo) == "boolean" and assets.config.cava_stereo or false
 
 	local particles = {}
 	local MAX_PARTICLES = 100

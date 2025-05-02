@@ -132,7 +132,7 @@ export default function () {
 
   // IP Addresses
   const ipAddresses = useCmd(
-    "bash -c 'ip -br addr | grep -v \"lo\"'",
+    `ip.sh`,
     (out) => {
       const lines = out.split("\n");
       const results: string[] = [];
@@ -190,7 +190,7 @@ export default function () {
 
   // External IP (if network is available)
   const externalIp = useCmd(
-    "bash -c 'curl -s --max-time 1 https://ipinfo.io/ip || echo \"Not available\"'",
+    "bash -c 'curl ifconfig.me",
   );
 
   // Process count

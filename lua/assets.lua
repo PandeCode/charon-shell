@@ -1,9 +1,33 @@
 local json = require "dkjson" -- dkjson for JSON parsing
 local config_path = os.getenv "HOME" .. "/.config/charon-shell/config.json"
-
 local audio_path = os.getenv "HOME" .. "/dev/lua/Media/"
+
+local logger = require "lua.logger"
+logger.global.debug "Loading assets"
+
+local loadconfig = function()
+	local file = io.open(config_path, "r")
+	if not file then
+		print("Error: Configuration file missing: " .. config_path)
+		return nil
+	end
+
+	local content = file:read "*a"
+	file:close()
+
+	local config, _, err = json.decode(content, 1, nil)
+	if err then
+		print("Error parsing config file: " .. err)
+		return nil
+	end
+
+	return config
+end
+
 return {
 	default_image_path = os.getenv "HOME" .. "/dev/lua/charon-shell/media/nix.svg",
+
+	config_path = config_path,
 
 	audio = {
 		alarm_01 = audio_path .. "Alarm01.wav",
@@ -27,8 +51,8 @@ return {
 
 	icons = {
 		youtube = os.getenv "HOME" .. "/dev/lua/charon-shell/media/youtube.svg",
-        disconnect = os.getenv "HOME" .. "/dev/lua/charon-shell/media/disconnect.svg",
-        connect = os.getenv "HOME" .. "/dev/lua/charon-shell/media/connect.svg",
+		disconnect = os.getenv "HOME" .. "/dev/lua/charon-shell/media/disconnect.svg",
+		connect = os.getenv "HOME" .. "/dev/lua/charon-shell/media/connect.svg",
 	},
 
 	colors = (function()
@@ -56,23 +80,7 @@ return {
 		}
 	end)(),
 
+	loadconfig = loadconfig,
 	-- Function to load and decode the config file
-	config = (function()
-		local file = io.open(config_path, "r")
-		if not file then
-			print("Error: Configuration file missing: " .. config_path)
-			return nil
-		end
-
-		local content = file:read "*a"
-		file:close()
-
-		local config, _, err = json.decode(content, 1, nil)
-		if err then
-			print("Error parsing config file: " .. err)
-			return nil
-		end
-
-		return config
-	end)(),
+	config = loadconfig(),
 }

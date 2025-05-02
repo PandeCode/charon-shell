@@ -261,13 +261,24 @@ function Center() {
           </div>
         </div>
         <hr />
+
         <button
-          onClick={() => astal.exec_async("theme.sh dark", () => ps.restart())}
+          onClick={() =>
+            astal.exec_async(
+              "bash -c 'theme.sh dark & pgrep niri && niri msg action do-screen-transition --delay-ms 500'",
+              () => ps.restart(),
+            )
+          }
         >
           Dark Mode
         </button>
         <button
-          onClick={() => astal.exec_async("theme.sh light", () => ps.restart())}
+          onClick={() =>
+            astal.exec_async(
+              "bash -c 'theme.sh light & pgrep niri && niri msg action do-screen-transition --delay-ms 500'",
+              () => ps.restart(),
+            )
+          }
         >
           Light Mode
         </button>

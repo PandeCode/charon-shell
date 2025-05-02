@@ -12,7 +12,7 @@ local damping = -0.4
 local el = require "lua.extras.elements"
 local btni = el.btni
 
-volume_to_text = utils.mk_threshold_func({
+local volume_to_text = utils.mk_threshold_func({
 	{ 0.7, "text-base05" },
 	{ 0.4, "text-base03" },
 	{ 0.1, "text-base01" },

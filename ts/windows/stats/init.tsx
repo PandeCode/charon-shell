@@ -2,6 +2,7 @@ import { Elements, useStack } from "../../../tslib/react";
 
 import Sysinfo from "./sysinfo";
 import Weather from "./weather";
+import Settings from "./settings";
 
 const { mkPopupToggleAnim } = require("lua.utils.astal");
 const { inspect, notify } = require("lua.utils.init");
@@ -12,6 +13,7 @@ function Stats() {
     [<>{Weather()}</>, "Weather"],
     [<>{Sysinfo()}</>, "Sysinfo"],
     [<>{Console()}</>, "Console"],
+    [<>{Settings()}</>, "Settings"],
   );
 
   return (

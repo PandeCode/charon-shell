@@ -254,7 +254,7 @@ local function Center()
             Elements.Create(
                 "button",
                 {onClick = function() return astal.exec_async(
-                    "theme.sh dark",
+                    "bash - c 'theme.sh dark & niri msg action do-screen-transition  --delay-ms 500'",
                     function() return ps.restart() end
                 ) end},
                 "Dark Mode"
@@ -262,7 +262,7 @@ local function Center()
             Elements.Create(
                 "button",
                 {onClick = function() return astal.exec_async(
-                    "theme.sh light",
+                    "bash - c 'theme.sh light & niri msg action do-screen-transition  --delay-ms 500'",
                     function() return ps.restart() end
                 ) end},
                 "Light Mode"

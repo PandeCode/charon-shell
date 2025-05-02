@@ -618,4 +618,21 @@ function M.seconds_to_mmss(seconds)
 	return string.format("%02d:%02d", mins, secs)
 end
 
+function M.getWM()
+	local session = os.getenv "XDG_SESSION_DESKTOP"
+	if not session then
+		return nil
+	end
+
+	local wm_map = {
+		["niri"] = "niri",
+		["sway"] = "sway",
+		["Hyprland"] = "Hyprland",
+		["river"] = "river",
+		["fht-compositor"] = "fht-compositor",
+	}
+
+	return wm_map[session]
+end
+
 return M

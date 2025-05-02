@@ -176,7 +176,7 @@ function ____exports.default()
         end
     )
     local ipAddresses = useCmd(
-        "bash -c 'ip -br addr | grep -v \"lo\"'",
+        "ip.sh",
         function(out)
             local lines = __TS__StringSplit(out, "\n")
             local results = {}
@@ -235,7 +235,7 @@ function ____exports.default()
             return "Not detected"
         end
     )
-    local externalIp = useCmd("bash -c 'curl -s --max-time 1 https://ipinfo.io/ip || echo \"Not available\"'")
+    local externalIp = useCmd("bash -c 'curl ifconfig.me")
     local processCount = useCmd(
         "bash -c 'ps aux | wc -l'",
         function(out)

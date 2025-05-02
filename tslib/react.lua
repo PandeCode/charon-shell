@@ -216,4 +216,8 @@ function ____exports.useReFetchCache(variable, url, preprocess)
         ____exports.useReFetch(variable, url, new_preprocess)
     end
 end
+function ____exports.bindAs(variable, property, func)
+    local b = astal.bind(variable, property)
+    return b.as(b, func)
+end
 return ____exports

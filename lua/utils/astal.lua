@@ -6,11 +6,14 @@ local Widget = require "astal.gtk3.widget"
 local utils = require "lua.utils"
 
 local assets = require "lua.assets"
+local logger = require "lua.logger"
 
 local M = {}
 local timing = 100
 
 function M.mkPopupToggleAnim(WindowChild, props, props_r)
+	logger.global.debug "hi"
+
 	local window = nil
 	local r_main = nil
 	local timeout = 10000

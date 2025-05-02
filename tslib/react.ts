@@ -200,3 +200,8 @@ export function useReFetch<T>(
     variable._v.set(variable._v, preprocess(out));
   });
 }
+
+export function bindAs(variable: any, property: string, func: CallableFunction ) {
+    const b = astal.bind(variable, property)
+    return b.as(b, func)
+}

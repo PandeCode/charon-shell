@@ -26,9 +26,9 @@
         "noImplicitReturns": true
     },
     "tstl": {
-        "luaPlugins": [
-          { "name": "./json-plugin.js" }
-        ],
+        // "luaPlugins": [
+        // { "name": "./json-plugin.js" }
+        // ],
         "noResolvePaths": [
             "astal",
             "astal.*",

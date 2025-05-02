@@ -1,32 +1,44 @@
-{ pkgs ? import <nixpkgs> {} }:
-
-let
-  # Create a GLib variant with debug symbols
+{pkgs ? import <nixpkgs> {}}: let
   debugGlib = pkgs.glib.overrideAttrs (oldAttrs: {
-    configureFlags = (oldAttrs.configureFlags or []) ++ [
-      "--enable-debug=yes"
-    ];
+    dontStrip = true;
+    configureFlags =
+      (oldAttrs.configureFlags or [])
+      ++ [
+        "--enable-debug=yes"
+      ];
   });
 
-  # Create a package set that uses the debug glib
+  dgobject-introspection = pkgs.gobject-introspection.overrideAttrs (oldAttrs: {
+    dontStrip = true;
+    configureFlags =
+      (oldAttrs.configureFlags or [])
+      ++ [
+        "--enable-debug=yes"
+      ];
+  });
+
   modifiedPkgs = pkgs.extend (self: super: {
     glib = debugGlib;
+    gobject-introspection = dgobject-introspection;
   });
+in
+  modifiedPkgs.mkShell {
+    buildInputs = with modifiedPkgs; [
+      glib
+      # cairo
+      gobject-introspection
+      # luaPackages.lgi
+    ];
 
-in modifiedPkgs.mkShell {
-  buildInputs = with modifiedPkgs; [
-    glib
-    # add any other runtime dependencies your binaries expect
-  ];
+    shellHook = with modifiedPkgs; ''
+      echo "Debug-enabled GLib activated"
+      echo "GLib version: $(pkg-config --modversion glib-2.0)"
 
-  shellHook = ''
-    echo "Debug-enabled GLib activated"
-    echo "GLib version: $(pkg-config --modversion glib-2.0)"
+      export PKG_CONFIG_PATH="${glib.dev}/lib/pkgconfig:${cairo.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
+      export LD_LIBRARY_PATH="${glib.out}/lib:${cairo.out}/lib:$LD_LIBRARY_PATH"
 
-    # Prepend the debug GLib to PKG_CONFIG_PATH and LD_LIBRARY_PATH
-    export PKG_CONFIG_PATH="${modifiedPkgs.glib.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
-    export LD_LIBRARY_PATH="${modifiedPkgs.glib.out}/lib:$LD_LIBRARY_PATH"
+      export GI_TYPELIB_PATH="${gobject-introspection}/lib/girepository-1.0:${cairo}/lib/girepository-1.0:$GI_TYPELIB_PATH"
 
-    # ./dev.sh
-  '';
-}
+      # You can now run: lua yourscript.lua
+    '';
+  }

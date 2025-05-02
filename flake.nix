@@ -35,8 +35,8 @@
         tray
         wireplumber
 
-        # hyprland
-        # river
+        hyprland
+        river
       ])
       ++ (with pkgs; [
         dart-sass
@@ -46,7 +46,8 @@
         inotify-tools
         typescript-language-server
 
-        libcanberra-gtk3
+        mesa
+        libGL
       ])
       ++ (
         with pkgs.luaPackages; [
@@ -63,8 +64,8 @@
           luasocket
           luaposix
 
-
           luarocks-nix
+
           # (import ./nix/lanes.nix pkgs)
           # (import ./nix/lume.nix pkgs)
         ]
